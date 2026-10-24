@@ -132,7 +132,7 @@ export default function AdminAnalytics({ analytics }: AdminAnalyticsProps) {
             <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">คะแนนสอบเฉลี่ยของแต่ละบทเรียน</p>
           </div>
 
-          <div className="space-y-3 overflow-y-auto max-h-[340px] pr-1">
+          <div className="space-y-3 overflow-y-auto max-h-[340px] pr-2 custom-scrollbar">
             {lessons.map((stat) => (
               <div key={stat.id} className="p-3 bg-slate-50 dark:bg-[#0F172A] rounded-xl border border-slate-200 dark:border-slate-700/50 space-y-2">
                 <div className="flex items-start justify-between gap-2">

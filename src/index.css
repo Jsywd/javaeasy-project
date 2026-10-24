@@ -385,20 +385,104 @@ h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-mono), monospace;
 }
 
-/* Custom scrollbar for scrollable modal dialogs */
-.custom-scrollbar::-webkit-scrollbar {
+/* ========================================================
+   GLOBAL SLEEK & MODERN SCROLLBAR (Cross-Browser)
+   ======================================================== */
+
+/* Standard Firefox & Modern Chromium */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(148, 163, 184, 0.3) transparent;
+}
+
+:root:not(.dark) * {
+  scrollbar-color: rgba(148, 163, 184, 0.4) transparent;
+}
+
+/* Chrome, Edge, Safari WebKit scrollbars */
+::-webkit-scrollbar {
   width: 6px;
+  height: 6px;
 }
+
+::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.28);
+  border-radius: 9999px;
+  transition: background-color 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(99, 102, 241, 0.65);
+}
+
+/* ลบปุ่มลูกศรขึ้นลงของ Windows ออก */
+::-webkit-scrollbar-button {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* Specific styling for Dark Mode */
+.dark ::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.25);
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: rgba(129, 140, 248, 0.7);
+}
+
+/* Light mode thumb adjustments */
+:root:not(.dark) ::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.45);
+}
+
+:root:not(.dark) ::-webkit-scrollbar-thumb:hover {
+  background: rgba(99, 102, 241, 0.75);
+}
+
+/* Custom scrollbar utility class */
+.custom-scrollbar {
+  scrollbar-width: thin;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 5px;
+}
+
 .custom-scrollbar::-webkit-scrollbar-track {
-  background: rgba(15, 23, 42, 0.4);
-  border-radius: 8px;
+  background: rgba(15, 23, 42, 0.2);
+  border-radius: 9999px;
 }
+
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(100, 116, 139, 0.5);
-  border-radius: 8px;
+  background: rgba(148, 163, 184, 0.35);
+  border-radius: 9999px;
 }
+
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: rgba(148, 163, 184, 0.8);
+  background: rgba(99, 102, 241, 0.8);
+}
+
+/* Main scroll viewport */
+#main-scroll-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+#main-scroll-container::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.3);
+}
+
+:root:not(.dark) #main-scroll-container::-webkit-scrollbar-track {
+  background: rgba(241, 245, 249, 0.5);
 }
 
 /* Subtle, sleek border in dark mode for hero banner (not overly bright/prominent) */
