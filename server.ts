@@ -873,7 +873,80 @@ app.get("/api/auth/check-verification-status", async (req: any, res: any) => {
 });
 
 app.post("/api/auth/register", async (req: any, res: any) => {
-  return res.status(400).json({ error: "กรุณายืนยันรหัส OTP 6 หลักทางอีเมลก่อนสมัครสมาชิก" });
+  const { email, password, full_name } = req.body;
+
+  if (!email || !password || !full_name) {
+    return res.status(400).json({ error: "กรุณากรอกข้อมูลให้ครบถ้วน" });
+  }
+
+  const trimmedEmail = email.trim().toLowerCase();
+  const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+  if (!emailRegex.test(trimmedEmail)) {
+    return res.status(400).json({ error: "รูปแบบอีเมลไม่ถูกต้อง กรุณากรอกอีเมลจริง (เช่น student@example.com)" });
+  }
+
+  if (password.length < 8) {
+    return res.status(400).json({ error: "รหัสผ่านต้องมีความยาวอย่างน้อย 8 ตัวอักษร" });
+  }
+
+  try {
+    const isSupabase = db.isUsingSupabase();
+    const supabase = getSupabase();
+
+    // เช็กว่าอีเมลซ้ำหรือไม่
+    const allProfiles = await db.getAllProfiles();
+    const existing = allProfiles.find((p: any) => p.email?.toLowerCase() === trimmedEmail);
+    if (existing) {
+      return res.status(400).json({ error: "อีเมลนี้ถูกลงทะเบียนเข้าใช้งานแล้ว กรุณาเข้าสู่ระบบแทน" });
+    }
+
+    let userId = crypto.randomUUID();
+
+    if (isSupabase && supabase) {
+      try {
+        const { data: createData, error: createError } = await supabase.auth.admin.createUser({
+          email: trimmedEmail,
+          password: password,
+          email_confirm: true,
+          user_metadata: { full_name: full_name.trim() }
+        });
+
+        if (!createError && createData?.user?.id) {
+          userId = createData.user.id;
+        } else {
+          const { data: signUpData } = await supabase.auth.signUp({
+            email: trimmedEmail,
+            password: password,
+            options: { data: { full_name: full_name.trim() } }
+          });
+          if (signUpData?.user?.id) {
+            userId = signUpData.user.id;
+          }
+        }
+      } catch (sbErr) {
+        console.warn("Supabase user create exception, falling back:", sbErr);
+      }
+    }
+
+    const shouldBeAdmin = isDesignatedAdmin(trimmedEmail);
+    const role = shouldBeAdmin ? "admin" : "user";
+
+    const newProfile = {
+      id: userId,
+      email: trimmedEmail,
+      full_name: full_name.trim(),
+      role: role as "user" | "admin",
+      status: "active" as "active" | "suspended",
+      created_at: new Date().toISOString(),
+      password_hash: hashPassword(password),
+    };
+
+    const saved = await db.createProfile(newProfile);
+    const token = generateToken(saved.id, saved.role);
+    return res.status(201).json({ ...saved, token });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message || "เกิดข้อผิดพลาดในการสมัครสมาชิก" });
+  }
 });
 
 app.post("/api/auth/login", async (req: any, res: any) => {

@@ -388,7 +388,46 @@ export default function App() {
   };
 
   const handleRegister = async (e: FormEvent) => {
-    handleRequestVerificationLink(e);
+    e.preventDefault();
+    setAuthError("");
+
+    if (!emailInput || !passwordInput || !fullNameInput) {
+      setAuthError("กรุณากรอกข้อมูลให้ครบถ้วน");
+      return;
+    }
+
+    const emailVal = validateEmail(emailInput);
+    if (!emailVal.isValid) {
+      setAuthError(emailVal.error || "รูปแบบอีเมลไม่ถูกต้อง");
+      return;
+    }
+
+    if (passwordInput.length < 8) {
+      setAuthError("รหัสผ่านต้องมีความยาวอย่างน้อย 8 ตัวอักษร");
+      return;
+    }
+
+    setIsRequestingLink(true);
+
+    const { ok, data, error } = await safeFetchJson("/api/auth/register", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        email: emailInput.trim(),
+        password: passwordInput,
+        full_name: fullNameInput.trim(),
+      }),
+    });
+
+    setIsRequestingLink(false);
+
+    if (!ok || !data) {
+      setAuthError(error || "ไม่สามารถสมัครสมาชิกได้ กรุณาลองใหม่อีกครั้ง");
+      return;
+    }
+
+    showToast("สมัครสมาชิกและเข้าสู่ระบบสำเร็จแล้ว!", "success");
+    handleLoginFlow(data.token || data.id, data);
   };
 
   const handleLogin = async (e: FormEvent) => {
