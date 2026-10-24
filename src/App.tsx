@@ -67,23 +67,8 @@ export default function App() {
   // Email validation helper
   const emailValResult = validateEmail(emailInput);
 
-  // Email Verification Link States
-  const [isLinkSentStep, setIsLinkSentStep] = useState(false);
-  const [simulatedLinkToken, setSimulatedLinkToken] = useState<string | null>(null);
-  const [simulatedVerificationLink, setSimulatedVerificationLink] = useState<string | null>(null);
-  const [smtpPreviewUrl, setSmtpPreviewUrl] = useState<string | null>(null);
-  const [isCustomSmtp, setIsCustomSmtp] = useState(false);
-  const [resendTimer, setResendTimer] = useState(0);
-  const [isRequestingLink, setIsRequestingLink] = useState(false);
-  const [isVerifyingLink, setIsVerifyingLink] = useState(false);
-  const [verificationSuccessMsg, setVerificationSuccessMsg] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (resendTimer > 0) {
-      const timer = setTimeout(() => setResendTimer((prev) => prev - 1), 1000);
-      return () => clearTimeout(timer);
-    }
-  }, [resendTimer]);
+// Submitting auth state
+  const [isSubmittingAuth, setIsSubmittingAuth] = useState(false);
 
   // Data states
   const [lessons, setLessons] = useState<Lesson[]>([]);
@@ -111,47 +96,6 @@ export default function App() {
 
   // Database Connection Status state
   const [dbStatus, setDbStatus] = useState<{ connected: boolean; provider: string; message: string } | null>(null);
-
-  // Check URL query params for verification link (e.g. ?verify_token=...&email=...)
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const verifyToken = params.get("verify_token");
-    const verifyEmail = params.get("email");
-
-    if (verifyToken && verifyEmail) {
-      handleVerifyEmailTokenDirect(verifyEmail, verifyToken);
-      // Clean query params from URL
-      window.history.replaceState({}, document.title, window.location.pathname);
-    }
-  }, []);
-
-  // Poll for verification completion when waiting for email verification (e.g. user verifies on mobile phone)
-  useEffect(() => {
-    let intervalId: any = null;
-
-    if (showAuthModal && authMode === "register" && isLinkSentStep && emailInput) {
-      intervalId = setInterval(async () => {
-        try {
-          const res = await fetch(`/api/auth/check-verification-status?email=${encodeURIComponent(emailInput.trim())}`);
-          const data = await res.json();
-
-          if (data && data.verified && data.user) {
-            clearInterval(intervalId);
-            setIsLinkSentStep(false);
-            showToast("ยืนยันอีเมลเรียบร้อยแล้ว เข้าสู่ระบบสำเร็จ", "success");
-            handleLoginFlow(data.token || data.user.id);
-          }
-        } catch (e) {
-          // Ignore network errors during polling
-        }
-      }, 3000);
-    }
-
-    return () => {
-      if (intervalId) clearInterval(intervalId);
-    };
-  }, [showAuthModal, authMode, isLinkSentStep, emailInput]);
-
   // Load basic state on startup
   useEffect(() => {
     fetchLessons();
@@ -298,96 +242,7 @@ export default function App() {
     }
   };
 
-  const handleRequestVerificationLink = async (e?: FormEvent) => {
-    if (e) e.preventDefault();
-    setAuthError("");
-
-    if (!emailInput || !passwordInput || !fullNameInput) {
-      setAuthError("กรุณากรอกข้อมูลให้ครบถ้วน");
-      return;
-    }
-
-    // Comprehensive email validation
-    const emailVal = validateEmail(emailInput);
-    if (!emailVal.isValid) {
-      setAuthError(emailVal.error || "รูปแบบอีเมลไม่ถูกต้อง");
-      return;
-    }
-
-    // Password strength validation
-    if (passwordInput.length < 8) {
-      setAuthError("รหัสผ่านต้องมีความยาวอย่างน้อย 8 ตัวอักษร");
-      return;
-    }
-    if (!/[A-Z]/.test(passwordInput)) {
-      setAuthError("รหัสผ่านต้องมีอักษรตัวพิมพ์ใหญ่ (A-Z) อย่างน้อย 1 ตัว");
-      return;
-    }
-    if (!/[a-z]/.test(passwordInput)) {
-      setAuthError("รหัสผ่านต้องมีอักษรตัวพิมพ์เล็ก (a-z) อย่างน้อย 1 ตัว");
-      return;
-    }
-    if (!/[0-9]/.test(passwordInput)) {
-      setAuthError("รหัสผ่านต้องมีตัวเลข (0-9) อย่างน้อย 1 ตัว");
-      return;
-    }
-
-    setIsRequestingLink(true);
-
-    const { ok, data, error } = await safeFetchJson("/api/auth/send-verification-link", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        email: emailInput.trim(),
-        password: passwordInput,
-        full_name: fullNameInput,
-      }),
-    });
-
-    setIsRequestingLink(false);
-
-    if (!ok || !data) {
-      setAuthError(error || "ไม่สามารถส่งลิงก์ยืนยันตัวตนได้ กรุณาตรวจสอบอีเมลและลองอีกครั้ง");
-      return;
-    }
-
-    setIsLinkSentStep(true);
-    setSimulatedLinkToken(data.token || null);
-    setSimulatedVerificationLink(data.verificationLink || null);
-    setSmtpPreviewUrl(data.previewUrl || null);
-    setIsCustomSmtp(!!data.isCustomSmtp);
-    setResendTimer(60);
-  };
-
-  const handleVerifyEmailTokenDirect = async (email: string, token: string) => {
-    setAuthError("");
-    setIsVerifyingLink(true);
-
-    const { ok, data, error } = await safeFetchJson("/api/auth/verify-email-link", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        email: email.trim(),
-        token: token.trim(),
-      }),
-    });
-
-    setIsVerifyingLink(false);
-
-    if (!ok || !data) {
-      setAuthError(error || "ลิงก์ยืนยันตัวตนไม่ถูกต้องหรือหมดอายุแล้ว กรุณากดขอลิงก์ใหม่อีกครั้ง");
-      return;
-    }
-
-    // Success! Log user in
-    setIsLinkSentStep(false);
-    setSimulatedLinkToken(null);
-    setSimulatedVerificationLink(null);
-    setVerificationSuccessMsg(`ยืนยันที่อยู่อีเมล ${email} สำเร็จเรียบร้อยแล้ว!`);
-    handleLoginFlow(data.token || data.id || data.profile?.id);
-  };
-
-  const handleRegister = async (e: FormEvent) => {
+const handleRegister = async (e: FormEvent) => {
     e.preventDefault();
     setAuthError("");
 
@@ -407,7 +262,7 @@ export default function App() {
       return;
     }
 
-    setIsRequestingLink(true);
+    setIsSubmittingAuth(true);
 
     const { ok, data, error } = await safeFetchJson("/api/auth/register", {
       method: "POST",
@@ -419,7 +274,7 @@ export default function App() {
       }),
     });
 
-    setIsRequestingLink(false);
+    setIsSubmittingAuth(false);
 
     if (!ok || !data) {
       setAuthError(error || "ไม่สามารถสมัครสมาชิกได้ กรุณาลองใหม่อีกครั้ง");
@@ -1560,16 +1415,12 @@ export default function App() {
                   <h3 className="text-base sm:text-lg font-black text-white">
                     {authMode === "login"
                       ? "เข้าสู่ระบบนักเรียน"
-                      : isLinkSentStep
-                      ? "ตรวจสอบกล่องข้อความอีเมลของคุณ"
                       : "สมัครสมาชิกร่วมเรียน"}
                   </h3>
                   <p className="text-xs text-slate-400 mt-1 leading-relaxed max-w-xs mx-auto">
                     {authMode === "login"
                       ? "ล็อกอินเพื่อเรียนต่อเนื้อหาทั้งหมดและเก็บคะแนนสอบของคุณ"
-                      : isLinkSentStep
-                      ? `ส่งลิงก์ยืนยันทางอีเมลของคุณแล้ว: ${emailInput}`
-                      : "สร้างบัญชีใหม่ ยืนยันตัวตนด้วย Verification Link ทางอีเมลจริง"}
+                      : "สร้างบัญชีใหม่ กรอกข้อมูลเพื่อเริ่มเรียนได้ทันที"}
                   </p>
                 </div>
 
@@ -1581,181 +1432,127 @@ export default function App() {
                 )}
 
                 {/* Form Controls */}
-                {authMode === "register" && isLinkSentStep ? (
-                  <div className="space-y-4">
-                    {/* Sleek Minimalist Email Instruction Card */}
-                    <div className="p-5 bg-slate-900/90 border border-slate-800 rounded-2xl text-left space-y-4 shadow-xl">
-                      <div className="flex items-center gap-3.5">
-                        <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 flex-shrink-0">
-                          <Mail size={18} />
-                        </div>
-                        <div className="space-y-1 flex-1 min-w-0">
-                          <h4 className="text-white font-bold text-sm">
-                            ส่งลิงก์ยืนยันทางอีเมลของคุณแล้ว
-                          </h4>
-                          <p className="text-xs text-emerald-300 font-semibold break-all">
-                            {emailInput}
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs">
-                        <span className="flex items-center gap-2 text-emerald-400 font-medium text-[11px]">
-                          <span className="relative flex h-2 w-2">
-                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-                          </span>
-                          กำลังรอการกดลิงก์ยืนยัน...
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center justify-between text-xs pt-1">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setIsLinkSentStep(false);
-                          setAuthError("");
-                        }}
-                        className="text-slate-400 hover:text-white transition-colors cursor-pointer"
-                      >
-                        ← เปลี่ยนอีเมล / แก้ไขข้อมูล
-                      </button>
-
-                      <button
-                        type="button"
-                        disabled={resendTimer > 0 || isRequestingLink}
-                        onClick={() => handleRequestVerificationLink()}
-                        className="text-indigo-400 font-bold hover:underline disabled:text-slate-500 disabled:no-underline cursor-pointer"
-                      >
-                        {resendTimer > 0 ? `ขอลิงก์ใหม่ (${resendTimer}s)` : "ขอส่งลิงก์ยืนยันอีกครั้ง"}
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <form onSubmit={authMode === "login" ? handleLogin : handleRegister} className="space-y-3.5">
-                    {authMode === "register" && (
-                      <div>
-                        <label className="block text-[10px] text-slate-400 font-bold uppercase mb-1">ชื่อ-นามสกุล *</label>
-                        <input
-                          type="text"
-                          placeholder="เช่น สมชาย สุขสบาย"
-                          value={fullNameInput}
-                          onChange={(e) => setFullNameInput(e.target.value)}
-                          className="w-full px-3.5 py-2 border border-slate-700 bg-[#0F172A] text-white rounded-xl text-xs focus:outline-none focus:border-indigo-500 transition-all"
-                          required
-                        />
-                      </div>
-                    )}
-
+                <form onSubmit={authMode === "login" ? handleLogin : handleRegister} className="space-y-3.5">
+                  {authMode === "register" && (
                     <div>
-                      <label className="block text-[10px] text-slate-400 font-bold uppercase mb-1">
-                        {authMode === "login" ? "อีเมล *" : "อีเมลจริงที่รับ Verification Link ได้ *"}
-                      </label>
+                      <label className="block text-[10px] text-slate-400 font-bold uppercase mb-1">ชื่อ-นามสกุล *</label>
                       <input
-                        type="email"
-                        placeholder="เช่น yourname@gmail.com, hotmail.com"
-                        value={emailInput}
-                        onChange={(e) => setEmailInput(e.target.value)}
+                        type="text"
+                        placeholder="เช่น สมชาย สุขสบาย"
+                        value={fullNameInput}
+                        onChange={(e) => setFullNameInput(e.target.value)}
                         className="w-full px-3.5 py-2 border border-slate-700 bg-[#0F172A] text-white rounded-xl text-xs focus:outline-none focus:border-indigo-500 transition-all"
                         required
                       />
-                      {authMode === "register" && emailInput.trim() !== "" && (
-                        <div className="mt-1.5 text-[11px]">
-                          {emailValResult.isValid ? (
-                            <div className="flex items-center gap-1.5 text-emerald-400 font-medium">
-                              <Check size={12} className="flex-shrink-0" />
-                              <span>รูปแบบอีเมลถูกต้อง (จะตรวจสอบ MX Server และส่ง Verification Link)</span>
-                            </div>
-                          ) : emailValResult.suggestion ? (
-                            <div className="p-2 bg-amber-500/10 border border-amber-500/20 text-amber-300 rounded-lg space-y-1">
-                              <div className="flex items-center gap-1.5">
-                                <AlertCircle size={12} className="flex-shrink-0 text-amber-400" />
-                                <span>คุณหมายถึง <strong>{emailValResult.suggestion}</strong> หรือไม่?</span>
-                              </div>
-                              <button
-                                type="button"
-                                onClick={() => setEmailInput(emailValResult.suggestion!)}
-                                className="text-[10px] bg-amber-500/20 hover:bg-amber-500/30 text-amber-200 font-bold px-2 py-0.5 rounded transition-colors cursor-pointer"
-                              >
-                                คลิกเพื่อเปลี่ยนเป็น {emailValResult.suggestion}
-                              </button>
-                            </div>
-                          ) : (
-                            <div className="flex items-center gap-1.5 text-rose-400">
-                              <X size={12} className="flex-shrink-0" />
-                              <span>{emailValResult.error}</span>
-                            </div>
-                          )}
-                        </div>
-                      )}
                     </div>
+                  )}
 
-                    <div>
-                      <label className="block text-[10px] text-slate-400 font-bold uppercase mb-1">รหัสผ่าน *</label>
-                      <div className="relative">
-                        <input
-                          type={showPassword ? "text" : "password"}
-                          placeholder={authMode === "login" ? "กรอกรหัสผ่านของคุณ" : "ตั้งรหัสผ่าน เช่น Pass1234"}
-                          value={passwordInput}
-                          onChange={(e) => setPasswordInput(e.target.value)}
-                          className="w-full pl-3.5 pr-10 py-2 border border-slate-700 bg-[#0F172A] text-white rounded-xl text-xs focus:outline-none focus:border-indigo-500 transition-all font-sans"
-                          required
-                        />
-                        <button
-                          type="button"
-                          id="toggle-password-visibility-btn"
-                          onClick={() => setShowPassword(!showPassword)}
-                          aria-label={showPassword ? "ซ่อนรหัสผ่าน" : "แสดงรหัสผ่าน"}
-                          title={showPassword ? "ซ่อนรหัสผ่าน" : "แสดงรหัสผ่าน"}
-                          className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-200 dark:hover:text-white rounded-lg transition-colors cursor-pointer flex items-center justify-center focus:outline-none"
-                        >
-                          {showPassword ? (
-                            <EyeOff size={16} className="text-slate-400 hover:text-indigo-400 transition-colors" />
-                          ) : (
-                            <Eye size={16} className="text-slate-400 hover:text-indigo-400 transition-colors" />
-                          )}
-                        </button>
+                  <div>
+                    <label className="block text-[10px] text-slate-400 font-bold uppercase mb-1">
+                      อีเมล *
+                    </label>
+                    <input
+                      type="email"
+                      placeholder="เช่น yourname@gmail.com, hotmail.com"
+                      value={emailInput}
+                      onChange={(e) => setEmailInput(e.target.value)}
+                      className="w-full px-3.5 py-2 border border-slate-700 bg-[#0F172A] text-white rounded-xl text-xs focus:outline-none focus:border-indigo-500 transition-all"
+                      required
+                    />
+                    {authMode === "register" && emailInput.trim() !== "" && (
+                      <div className="mt-1.5 text-[11px]">
+                        {emailValResult.isValid ? (
+                          <div className="flex items-center gap-1.5 text-emerald-400 font-medium">
+                            <Check size={12} className="flex-shrink-0" />
+                            <span>รูปแบบอีเมลถูกต้อง</span>
+                          </div>
+                        ) : emailValResult.suggestion ? (
+                          <div className="p-2 bg-amber-500/10 border border-amber-500/20 text-amber-300 rounded-lg space-y-1">
+                            <div className="flex items-center gap-1.5">
+                              <AlertCircle size={12} className="flex-shrink-0 text-amber-400" />
+                              <span>คุณหมายถึง <strong>{emailValResult.suggestion}</strong> หรือไม่?</span>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => setEmailInput(emailValResult.suggestion!)}
+                              className="text-[10px] bg-amber-500/20 hover:bg-amber-500/30 text-amber-200 font-bold px-2 py-0.5 rounded transition-colors cursor-pointer"
+                            >
+                              คลิกเพื่อเปลี่ยนเป็น {emailValResult.suggestion}
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-1.5 text-rose-400">
+                            <X size={12} className="flex-shrink-0" />
+                            <span>{emailValResult.error}</span>
+                          </div>
+                        )}
                       </div>
-                      {authMode === "register" && (
-                        <div className="mt-2 p-2.5 bg-slate-900/90 border border-slate-800 rounded-xl text-[11px] space-y-1.5">
-                          <div className="text-slate-400 font-semibold text-[10px] uppercase tracking-wider">ข้อกำหนดความปลอดภัยของรหัสผ่าน:</div>
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
-                            <div className={`flex items-center gap-1.5 transition-colors ${isMinLength ? "text-emerald-400 font-medium" : "text-slate-500"}`}>
-                              {isMinLength ? <Check size={12} className="text-emerald-400 flex-shrink-0" /> : <X size={12} className="text-slate-500 flex-shrink-0" />}
-                              <span>ยาวอย่างน้อย 8 ตัวอักษร</span>
-                            </div>
-                            <div className={`flex items-center gap-1.5 transition-colors ${hasUppercase ? "text-emerald-400 font-medium" : "text-slate-500"}`}>
-                              {hasUppercase ? <Check size={12} className="text-emerald-400 flex-shrink-0" /> : <X size={12} className="text-slate-500 flex-shrink-0" />}
-                              <span>พิมพ์ใหญ่ (A-Z) 1+</span>
-                            </div>
-                            <div className={`flex items-center gap-1.5 transition-colors ${hasLowercase ? "text-emerald-400 font-medium" : "text-slate-500"}`}>
-                              {hasLowercase ? <Check size={12} className="text-emerald-400 flex-shrink-0" /> : <X size={12} className="text-slate-500 flex-shrink-0" />}
-                              <span>พิมพ์เล็ก (a-z) 1+</span>
-                            </div>
-                            <div className={`flex items-center gap-1.5 transition-colors ${hasNumber ? "text-emerald-400 font-medium" : "text-slate-500"}`}>
-                              {hasNumber ? <Check size={12} className="text-emerald-400 flex-shrink-0" /> : <X size={12} className="text-slate-500 flex-shrink-0" />}
-                              <span>ตัวเลข (0-9) 1+</span>
-                            </div>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] text-slate-400 font-bold uppercase mb-1">รหัสผ่าน *</label>
+                    <div className="relative">
+                      <input
+                        type={showPassword ? "text" : "password"}
+                        placeholder={authMode === "login" ? "กรอกรหัสผ่านของคุณ" : "ตั้งรหัสผ่าน เช่น Pass1234"}
+                        value={passwordInput}
+                        onChange={(e) => setPasswordInput(e.target.value)}
+                        className="w-full pl-3.5 pr-10 py-2 border border-slate-700 bg-[#0F172A] text-white rounded-xl text-xs focus:outline-none focus:border-indigo-500 transition-all font-sans"
+                        required
+                      />
+                      <button
+                        type="button"
+                        id="toggle-password-visibility-btn"
+                        onClick={() => setShowPassword(!showPassword)}
+                        aria-label={showPassword ? "ซ่อนรหัสผ่าน" : "แสดงรหัสผ่าน"}
+                        title={showPassword ? "ซ่อนรหัสผ่าน" : "แสดงรหัสผ่าน"}
+                        className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-200 dark:hover:text-white rounded-lg transition-colors cursor-pointer flex items-center justify-center focus:outline-none"
+                      >
+                        {showPassword ? (
+                          <EyeOff size={16} className="text-slate-400 hover:text-indigo-400 transition-colors" />
+                        ) : (
+                          <Eye size={16} className="text-slate-400 hover:text-indigo-400 transition-colors" />
+                        )}
+                      </button>
+                    </div>
+                    {authMode === "register" && (
+                      <div className="mt-2 p-2.5 bg-slate-900/90 border border-slate-800 rounded-xl text-[11px] space-y-1.5">
+                        <div className="text-slate-400 font-semibold text-[10px] uppercase tracking-wider">ข้อกำหนดความปลอดภัยของรหัสผ่าน:</div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+                          <div className={`flex items-center gap-1.5 transition-colors ${isMinLength ? "text-emerald-400 font-medium" : "text-slate-500"}`}>
+                            {isMinLength ? <Check size={12} className="text-emerald-400 flex-shrink-0" /> : <X size={12} className="text-slate-500 flex-shrink-0" />}
+                            <span>ยาวอย่างน้อย 8 ตัวอักษร</span>
+                          </div>
+                          <div className={`flex items-center gap-1.5 transition-colors ${hasUppercase ? "text-emerald-400 font-medium" : "text-slate-500"}`}>
+                            {hasUppercase ? <Check size={12} className="text-emerald-400 flex-shrink-0" /> : <X size={12} className="text-slate-500 flex-shrink-0" />}
+                            <span>พิมพ์ใหญ่ (A-Z) 1+</span>
+                          </div>
+                          <div className={`flex items-center gap-1.5 transition-colors ${hasLowercase ? "text-emerald-400 font-medium" : "text-slate-500"}`}>
+                            {hasLowercase ? <Check size={12} className="text-emerald-400 flex-shrink-0" /> : <X size={12} className="text-slate-500 flex-shrink-0" />}
+                            <span>พิมพ์เล็ก (a-z) 1+</span>
+                          </div>
+                          <div className={`flex items-center gap-1.5 transition-colors ${hasNumber ? "text-emerald-400 font-medium" : "text-slate-500"}`}>
+                            {hasNumber ? <Check size={12} className="text-emerald-400 flex-shrink-0" /> : <X size={12} className="text-slate-500 flex-shrink-0" />}
+                            <span>ตัวเลข (0-9) 1+</span>
                           </div>
                         </div>
-                      )}
-                    </div>
+                      </div>
+                    )}
+                  </div>
 
-                    <button
-                      id="auth-submit-btn"
-                      type="submit"
-                      disabled={isRequestingLink}
-                      className="w-full py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs rounded-xl cursor-pointer transition-all shadow-md shadow-indigo-600/20 mt-1 flex items-center justify-center gap-2"
-                    >
-                      {authMode === "login"
-                        ? "เข้าสู่ระบบและเริ่มเรียน"
-                        : isRequestingLink
-                        ? "กำลังสร้าง Verification Link..."
-                        : "ส่ง Verification Link ยืนยันทางอีเมล"}
-                    </button>
-                  </form>
-                )}
+                  <button
+                    id="auth-submit-btn"
+                    type="submit"
+                    disabled={isSubmittingAuth}
+                    className="w-full py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs rounded-xl cursor-pointer transition-all shadow-md shadow-indigo-600/20 mt-1 flex items-center justify-center gap-2"
+                  >
+                    {authMode === "login"
+                      ? (isSubmittingAuth ? "กำลังเข้าสู่ระบบ..." : "เข้าสู่ระบบและเริ่มเรียน")
+                      : (isSubmittingAuth ? "กำลังสมัครสมาชิก..." : "สมัครสมาชิกและเริ่มเรียนทันที")}
+                  </button>
+                </form>
+                
 
                 {/* Google OAuth Option */}
                 <div className="space-y-2.5">
@@ -1790,7 +1587,6 @@ export default function App() {
                         id="switch-to-register-btn"
                         onClick={() => {
                           setAuthMode("register");
-                          setIsLinkSentStep(false);
                           setShowPassword(false);
                           setAuthError("");
                         }}
@@ -1806,7 +1602,6 @@ export default function App() {
                         id="switch-to-login-btn"
                         onClick={() => {
                           setAuthMode("login");
-                          setIsLinkSentStep(false);
                           setShowPassword(false);
                           setAuthError("");
                         }}
