@@ -172,14 +172,21 @@ export default function App() {
   useEffect(() => {
     const handleOAuthMessage = (event: MessageEvent) => {
       const origin = event.origin;
-      if (!origin.endsWith(".run.app") && !origin.includes("localhost") && !origin.includes("127.0.0.1")) {
+      // อนุญาตโดเมนปัจจุบัน (Render, Custom Domain) และ Development domains
+      if (
+        origin !== window.location.origin &&
+        !origin.endsWith(".onrender.com") &&
+        !origin.endsWith(".run.app") &&
+        !origin.includes("localhost") &&
+        !origin.includes("127.0.0.1")
+      ) {
         return;
       }
 
       if (event.data?.type === "OAUTH_AUTH_SUCCESS") {
         const oauthToken = event.data.token;
         if (oauthToken) {
-          handleLoginFlow(oauthToken);
+          handleLoginFlow(oauthToken, event.data.user);
         }
       } else if (event.data?.type === "OAUTH_AUTH_FAILED") {
         const errorMsg = event.data.error;
