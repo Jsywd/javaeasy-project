@@ -1,0 +1,462 @@
+{
+  "profiles": [
+    {
+      "id": "dbc08b8b-77ee-4968-abc3-5504d1ce1e27",
+      "email": "admin@gmail.com",
+      "full_name": "Admin",
+      "role": "admin",
+      "status": "active",
+      "created_at": "2026-08-10T11:55:31.947048+00:00",
+      "password_hash": "9f4b639f068d8bf496859304949a90f2:5f483f8a03ea45654ab3652f33a55583a2870af2aecbe29d857a5aa979bdf9756796b75028eb9f89e40dac67682e2038d268fa0f2f4861d7e05c2b7724a2e3fd"
+    }
+  ],
+  "lessons": [
+    {
+      "id": "lesson-001",
+      "title": "บทที่ 1: แนะนำภาษา Java และ Hello World",
+      "content": "# ยินดีต้อนรับสู่โลกของ Java!\n\nภาษา Java เป็นหนึ่งในภาษาโปรแกรมมิ่งที่ได้รับความนิยมมากที่สุดในโลก พัฒนาขึ้นโดย James Gosling แห่ง Sun Microsystems ในปี 1995 ปัจจุบันอยู่ภายใต้การดูแลของ Oracle\n\n## จุดเด่นของภาษา Java\n1. **Write Once, Run Anywhere (WORA)**: เขียนครั้งเดียว นำไปรันได้ทุกที่ที่มี Java Virtual Machine (JVM)\n2. **Object-Oriented Programming (OOP)**: สนับสนุนการเขียนโปรแกรมเชิงวัตถุอย่างเต็มรูปแบบ\n3. **Strongly-Typed**: มีการระบุประเภทข้อมูลของตัวแปรอย่างเข้มงวด ช่วยลดข้อผิดพลาดขณะรัน\n\n---\n\n## โครงสร้างพื้นฐานของโปรแกรม Java\nในภาษา Java ทุกโค้ดจะทำงานอยู่ภายใต้คลาส (Class) และมีเมธอดหลักชื่อ `main` เป็นจุดเริ่มต้นในการทำงานของโปรแกรม ดังตัวอย่างต่อไปนี้:",
+      "code_examples": [
+        {
+          "title": "HelloWorld.java",
+          "code": "public class HelloWorld {\n    public static void main(String[] args) {\n        // แสดงข้อความออกทางหน้าจอ\n        System.out.println(\"Hello, World!\");\n    }\n}",
+          "language": "java"
+        }
+      ],
+      "order_index": 1,
+      "is_free": true,
+      "created_at": "2026-07-17T12:43:47.464Z"
+    },
+    {
+      "id": "lesson-002",
+      "title": "บทที่ 2: ตัวแปรและชนิดข้อมูลพื้นฐาน",
+      "content": "# ตัวแปรและชนิดข้อมูลในภาษา Java\n\nก่อนที่เราจะคำนวณหรือจัดการข้อมูลในโปรแกรม เราต้องรู้จักวิธีการเก็บข้อมูลในหน่วยความจำ ซึ่งเรียกว่า **ตัวแปร (Variables)**\n\nในภาษา Java ซึ่งเป็นภาษาประเภท Strongly-typed เราต้องประกาศประเภทข้อมูลก่อนใช้งานตัวแปรเสมอ\n\n## ชนิดข้อมูลพื้นฐาน (Primitive Data Types)\nภาษา Java มีชนิดข้อมูลหลักๆ ดังนี้:\n- **int**: ใช้เก็บตัวเลขจำนวนเต็ม เช่น `10`, `-450`\n- **double**: ใช้เก็บตัวเลขทศนิยม เช่น `3.14`, `99.99`\n- **boolean**: ใช้เก็บค่าความจริง มีเพียงสองค่าคือ `true` หรือ `false`\n- **char**: ใช้เก็บตัวอักษรเดี่ยวๆ ตัวเดียว เช่น `'A'`, `'ก'` (เขียนในเครื่องหมาย '...')\n\n## ชนิดข้อมูลประเภทอ้างอิง (Reference Data Types)\n- **String**: ใช้เก็บข้อความยาวๆ เช่น `\"Hello Java\"` (เขียนในเครื่องหมาย \"...\")\n\n---\n\n## ตัวอย่างการประกาศและการสร้างตัวแปร\nเราสามารถกำหนดค่าให้ตัวแปรได้ตอนประกาศ หรือกำหนดภายหลังก็ได้:",
+      "code_examples": [
+        {
+          "title": "VariablesDemo.java",
+          "code": "public class VariablesDemo {\n    public static void main(String[] args) {\n        int age = 20;\n        double price = 129.50;\n        boolean isJavaFun = true;\n        char grade = 'A';\n        String studentName = \"สมศรี\";\n\n        System.out.println(\"ชื่อ: \" + studentName);\n        System.out.println(\"อายุ: \" + age + \" ปี\");\n        System.out.println(\"เกรด: \" + grade);\n    }\n}",
+          "language": "java"
+        }
+      ],
+      "order_index": 2,
+      "is_free": true,
+      "created_at": "2026-07-17T12:43:47.464Z"
+    },
+    {
+      "id": "lesson-003",
+      "title": "บทที่ 3: โครงสร้างควบคุมแบบเงื่อนไข (if-else & switch)",
+      "content": "# โครงสร้างควบคุมแบบมีเงื่อนไข (Control Flow)\n\nการควบคุมทิศทางการทำงานของโปรแกรมตามเงื่อนไขที่กำหนด ช่วยให้โปรแกรมตัดสินใจได้ฉลาดขึ้นเหมือนมีความคิด!\n\n## 1. การใช้งาน if-else\nคำสั่ง `if` จะทำงานเมื่อเงื่อนไขเป็นจริง หากมีเงื่อนไขอื่นให้ตรวจเช็กจะใช้ `else if` และหากไม่ตรงกับเงื่อนไขใดเลยจะทำงานในบล็อก `else`\n\n## 2. การใช้งาน switch case\nเหมาะสำหรับการเปรียบเทียบตัวแปรหนึ่งตัวที่มีค่าเป็นตัวเลือกที่แน่นอน เช่น วันในสัปดาห์ หรือเมนูตัวเลือก\n\n---\n\n## ตัวอย่างคำสั่งตัดสินใจเปรียบเทียบคะแนนเพื่อตัดเกรด:",
+      "code_examples": [
+        {
+          "title": "GradeCalculator.java",
+          "code": "public class GradeCalculator {\n    public static void main(String[] args) {\n        int score = 78;\n\n        if (score >= 80) {\n            System.out.println(\"เกรด A\");\n        } else if (score >= 70) {\n            System.out.println(\"เกรด B\");\n        } else if (score >= 60) {\n            System.out.println(\"เกรด C\");\n        } else {\n            System.out.println(\"เกรด F\");\n        }\n    }\n}",
+          "language": "java"
+        }
+      ],
+      "order_index": 3,
+      "is_free": false,
+      "created_at": "2026-07-17T12:43:47.464Z"
+    },
+    {
+      "id": "lesson-004",
+      "title": "บทที่ 4: การวนซ้ำ (Loops in Java)",
+      "content": "# การวนซ้ำซ้ำๆ เพื่อลดเวลาการเขียนโค้ด (Loops)\n\nการวนซ้ำ (Loops) เป็นเครื่องมืออันทรงพลังในการสั่งให้โปรแกรมทำงานเดิมๆ ซ้ำหลายๆ ครั้ง เช่น การแสดงตัวเลข 1 ถึง 100 หรือการประมวลผลข้อมูลใน List\n\nในภาษา Java มีลูปหลักๆ อยู่ 3 ชนิด:\n\n1. **for loop**: เหมาะสำหรับกรณีที่รู้จำนวนรอบการทำงานล่วงหน้าอย่างแน่นอน\n2. **while loop**: ทำงานซ้ำตราบใดที่เงื่อนไขยังเป็นจริง (เช็กเงื่อนไขก่อนเริ่มแต่ละรอบ)\n3. **do-while loop**: ทำงานก่อน 1 รอบเสมอ จากนั้นค่อยตรวจสอบเงื่อนไข\n\n---\n\n## ตัวอย่างการเปรียบเทียบการรันลูปพิมพ์ตัวเลข:",
+      "code_examples": [
+        {
+          "title": "LoopComparison.java",
+          "code": "public class LoopComparison {\n    public static void main(String[] args) {\n        System.out.println(\"--- for loop ---\");\n        for (int i = 1; i <= 5; i++) {\n            System.out.println(\"รอบที่ \" + i);\n        }\n\n        System.out.println(\"--- while loop ---\");\n        int j = 1;\n        while (j <= 5) {\n            System.out.println(\"รอบที่ \" + j);\n            j++;\n        }\n    }\n}",
+          "language": "java"
+        }
+      ],
+      "order_index": 4,
+      "is_free": false,
+      "created_at": "2026-07-17T12:43:47.464Z"
+    },
+    {
+      "id": "lesson-lp5u3hy74",
+      "title": "บทที่ 6",
+      "content": "123",
+      "code_examples": [
+        {
+          "title": "Main.java",
+          "code": "public class Main {\n    public static void main(String[] args) {\n        \n    }\n}",
+          "language": "java"
+        }
+      ],
+      "order_index": 5,
+      "is_free": true,
+      "created_at": "2026-07-17T12:54:27.155Z"
+    },
+    {
+      "id": "209a5d12-7686-45d1-9180-e4126c47bb7c",
+      "title": "บทที่ 6",
+      "content": "1",
+      "code_examples": [
+        {
+          "title": "Main.java",
+          "code": "public class Main {\n    public static void main(String[] args) {\n        \n    }\n}",
+          "language": "java"
+        },
+        {
+          "title": "Example.java",
+          "code": "11",
+          "language": "java"
+        }
+      ],
+      "order_index": 6,
+      "is_free": false,
+      "created_at": "2026-07-17T13:12:16.866Z"
+    },
+    {
+      "id": "b649ca41-a1ea-494a-8fe6-b9fd742185e8",
+      "title": "บทที่ 1 เรียนรู้ภาษา java",
+      "content": "123",
+      "code_examples": [
+        {
+          "code": "public class Main {\n    public static void main(String[] args) {\n        System.out.print(\"Hello World\");\n    }\n}",
+          "title": "Main.java",
+          "language": "java"
+        }
+      ],
+      "order_index": 1,
+      "is_free": true,
+      "created_at": "2026-07-17T13:24:11.041+00:00"
+    },
+    {
+      "id": "516ec76e-aadb-4493-b763-7d08b7bfde69",
+      "title": "บทที่ 3 Input",
+      "content": "input",
+      "code_examples": [
+        {
+          "code": "public class Main {\n    public static void main(String[] args) {\n        \n    }\n}",
+          "title": "Main.java",
+          "language": "java"
+        }
+      ],
+      "order_index": 3,
+      "is_free": false,
+      "created_at": "2026-09-24T14:25:33.097+00:00"
+    },
+    {
+      "id": "02281bca-3bf4-4952-a21d-feac97f54fcc",
+      "title": "บทที่ 4 Loop",
+      "content": "if - else",
+      "code_examples": [
+        {
+          "code": "public class Main {\n    public static void main(String[] args) {\n        \n    }\n}",
+          "title": "Loop",
+          "language": "java"
+        }
+      ],
+      "order_index": 4,
+      "is_free": false,
+      "created_at": "2026-10-06T13:02:43.052+00:00"
+    }
+  ],
+  "questions": [
+    {
+      "id": "q-101",
+      "lesson_id": "lesson-001",
+      "type": "multiple_choice",
+      "question": "คีย์เวิร์ดใดที่ใช้ในการสร้างหรือประกาศคลาส (Class) ในภาษา Java?",
+      "options": [
+        "class",
+        "Class",
+        "new",
+        "struct"
+      ],
+      "correct_answer": "class",
+      "order_index": 1
+    },
+    {
+      "id": "q-102",
+      "lesson_id": "lesson-001",
+      "type": "drag_drop",
+      "question": "Drag and drop the correct method to print Hello World in Java.",
+      "template_code": "System.out.___(\"Hello World\");",
+      "options": [
+        "println",
+        "echo",
+        "printline"
+      ],
+      "correct_answer": [
+        "println"
+      ],
+      "order_index": 2
+    },
+    {
+      "id": "q-103",
+      "lesson_id": "lesson-001",
+      "type": "drag_drop",
+      "question": "จงเรียงลำดับโค้ดภาษา Java ต่อไปนี้ให้แสดงคำว่า \"Hello World\" ได้อย่างถูกต้อง",
+      "options": [
+        "public class Hello {",
+        "    public static void main(String[] args) {",
+        "        System.out.println(\"Hello World\");",
+        "    }",
+        "}"
+      ],
+      "correct_answer": [
+        "public class Hello {",
+        "    public static void main(String[] args) {",
+        "        System.out.println(\"Hello World\");",
+        "    }",
+        "}"
+      ],
+      "order_index": 3
+    },
+    {
+      "id": "q-201",
+      "lesson_id": "lesson-002",
+      "type": "multiple_choice",
+      "question": "ชนิดข้อมูลใดใน Java ที่ใช้เก็บทศนิยมอย่างแม่นยำ?",
+      "options": [
+        "int",
+        "double",
+        "boolean",
+        "char"
+      ],
+      "correct_answer": "double",
+      "order_index": 1
+    },
+    {
+      "id": "q-202",
+      "lesson_id": "lesson-002",
+      "type": "drag_drop",
+      "question": "จงเรียงการประกาศตัวแปรแต่ละชนิดให้ถูกต้องตามหลักภาษา Java (ชนิดข้อมูล ชื่อตัวแปร = ค่า;)",
+      "options": [
+        "int score = 100;",
+        "double temp = 37.5;",
+        "String text = \"Java\";",
+        "boolean ok = true;"
+      ],
+      "correct_answer": [
+        "int score = 100;",
+        "double temp = 37.5;",
+        "String text = \"Java\";",
+        "boolean ok = true;"
+      ],
+      "order_index": 2
+    },
+    {
+      "id": "q-301",
+      "lesson_id": "lesson-003",
+      "type": "multiple_choice",
+      "question": "หากต้องการตรวจสอบเงื่อนไขหลายทางเลือกต่อจาก if จะใช้คีย์เวิร์ดใด?",
+      "options": [
+        "else if",
+        "elseif",
+        "else",
+        "switch"
+      ],
+      "correct_answer": "else if",
+      "order_index": 1
+    },
+    {
+      "id": "q-302",
+      "lesson_id": "lesson-003",
+      "type": "drag_drop",
+      "question": "จงเรียงลำดับชุดคำสั่งตรวจเช็กค่าของตัวแปร x ว่ามีค่ามากกว่า 10 หรือไม่ หากมากกว่าให้พิมพ์คำว่า \"Big\" นอกนั้นพิมพ์ \"Small\"",
+      "options": [
+        "if (x > 10) {",
+        "    System.out.println(\"Big\");",
+        "} else {",
+        "    System.out.println(\"Small\");",
+        "}"
+      ],
+      "correct_answer": [
+        "if (x > 10) {",
+        "    System.out.println(\"Big\");",
+        "} else {",
+        "    System.out.println(\"Small\");",
+        "}"
+      ],
+      "order_index": 2
+    },
+    {
+      "id": "q-401",
+      "lesson_id": "lesson-004",
+      "type": "multiple_choice",
+      "question": "การวนซ้ำข้อใดที่จะต้องประมวลผลโค้ดในบล็อกก่อนอย่างน้อย 1 รอบก่อนจะเช็กเงื่อนไข?",
+      "options": [
+        "do-while",
+        "while",
+        "for",
+        "foreach"
+      ],
+      "correct_answer": "do-while",
+      "order_index": 1
+    },
+    {
+      "id": "q-402",
+      "lesson_id": "lesson-004",
+      "type": "drag_drop",
+      "question": "จงเรียงลำดับคำสั่ง For Loop เพื่อแสดงตัวเลข 1 ถึง 5 ออกหน้าจอ",
+      "options": [
+        "for (int i = 1; i <= 5; i++) {",
+        "    System.out.println(i);",
+        "}"
+      ],
+      "correct_answer": [
+        "for (int i = 1; i <= 5; i++) {",
+        "    System.out.println(i);",
+        "}"
+      ],
+      "order_index": 2
+    },
+    {
+      "id": "c91b394c-5a2f-4b85-b57e-bb5f968cc5a3",
+      "lesson_id": "b649ca41-a1ea-494a-8fe6-b9fd742185e8",
+      "type": "drag_drop",
+      "question": "Drag and drop the correct method to print Hello World in Java.",
+      "template_code": "System.out.___(\"Hello World\");",
+      "options": [
+        "print",
+        "int",
+        "Print"
+      ],
+      "correct_answer": [
+        "print"
+      ],
+      "order_index": 3
+    },
+    {
+      "id": "ec0e353d-7f70-4e33-90ac-2db92c247d97",
+      "lesson_id": "b649ca41-a1ea-494a-8fe6-b9fd742185e8",
+      "type": "drag_drop",
+      "question": "เรียงให้ถูกต้อง",
+      "options": [
+        "public class Main {",
+        "public static void main(String[] args) {",
+        "System.out.print(\"Hello World\");     } }"
+      ],
+      "correct_answer": [
+        "public class Main {",
+        "public static void main(String[] args) {",
+        "System.out.print(\"Hello World\");     } }"
+      ],
+      "order_index": 2
+    },
+    {
+      "id": "880ba09c-96cf-47ac-ba62-fad8c3003537",
+      "lesson_id": "5066890f-18a7-420f-87e2-8f158278d678",
+      "type": "drag_drop",
+      "question": "Drag and drop the correct method to print Hello World in Java.",
+      "options": [
+        "main",
+        "print",
+        "out"
+      ],
+      "correct_answer": [
+        "print"
+      ],
+      "template_code": "System.out.___(\"Hello World\");",
+      "order_index": 2
+    }
+  ],
+  "progress": [
+    {
+      "id": "prog-001",
+      "user_id": "student-user-id-002",
+      "lesson_id": "lesson-001",
+      "completed": true,
+      "quiz_score": 100,
+      "updated_at": "2026-07-17T12:43:47.464Z"
+    },
+    {
+      "id": "51404bbb-8d6a-4649-8e55-a42f50563f62",
+      "user_id": "dbc08b8b-77ee-4968-abc3-5504d1ce1e27",
+      "lesson_id": "b649ca41-a1ea-494a-8fe6-b9fd742185e8",
+      "completed": false,
+      "quiz_score": 50,
+      "updated_at": "2026-10-06T12:59:25.926Z"
+    },
+    {
+      "id": "2cd3d45b-02be-4757-b2e3-83b17d705f6e",
+      "user_id": "1348eb3a-a0c4-402f-96cf-a51d429348e3",
+      "lesson_id": "b649ca41-a1ea-494a-8fe6-b9fd742185e8",
+      "completed": true,
+      "quiz_score": 100,
+      "updated_at": "2026-09-24T07:19:20.162Z"
+    },
+    {
+      "id": "283d67c9-4eeb-4ed3-af5a-06bce2660786",
+      "user_id": "b86ee5c8-19d4-4717-827b-d3a8466cf262",
+      "lesson_id": "b649ca41-a1ea-494a-8fe6-b9fd742185e8",
+      "completed": true,
+      "quiz_score": 100,
+      "updated_at": "2026-09-24T06:59:26.512Z"
+    },
+    {
+      "id": "819adfc5-9239-4805-b370-b5822796c371",
+      "user_id": "ff265f8c-bbd8-4e55-a029-81e6dc0d70bb",
+      "lesson_id": "b649ca41-a1ea-494a-8fe6-b9fd742185e8",
+      "completed": true,
+      "quiz_score": 100,
+      "updated_at": "2026-09-24T07:12:24.189Z"
+    },
+    {
+      "id": "61e976ca-f741-4516-896c-cd5b2b62004a",
+      "user_id": "admin-user-id-001",
+      "lesson_id": "lesson-001",
+      "completed": false,
+      "quiz_score": 33,
+      "updated_at": "2026-10-05T13:47:41.146Z"
+    },
+    {
+      "id": "6c16c751-170f-4ce7-9fc7-0bce877fcff6",
+      "user_id": "1348eb3a-a0c4-402f-96cf-a51d429348e3",
+      "lesson_id": "5066890f-18a7-420f-87e2-8f158278d678",
+      "completed": false,
+      "quiz_score": 0,
+      "updated_at": "2026-10-05T15:03:35.544Z"
+    },
+    {
+      "id": "a5bb68ab-7afb-4a84-a419-269423904a40",
+      "user_id": "7b3877c1-1787-4a1f-abd3-712132fbdd72",
+      "lesson_id": "516ec76e-aadb-4493-b763-7d08b7bfde69",
+      "completed": true,
+      "quiz_score": 100,
+      "updated_at": "2026-10-05T15:05:40.129Z"
+    },
+    {
+      "id": "6b4ef3c5-ac8a-42ef-bd4e-0e260db35e53",
+      "user_id": "7b3877c1-1787-4a1f-abd3-712132fbdd72",
+      "lesson_id": "5066890f-18a7-420f-87e2-8f158278d678",
+      "completed": true,
+      "quiz_score": 100,
+      "updated_at": "2026-10-05T15:06:08.038Z"
+    },
+    {
+      "id": "06cdef09-82f0-4397-8c3e-d1eb5cc96b17",
+      "user_id": "725bb585-8c13-4411-87d3-d8270f1d3e0b",
+      "lesson_id": "b649ca41-a1ea-494a-8fe6-b9fd742185e8",
+      "completed": true,
+      "quiz_score": 100,
+      "updated_at": "2026-10-05T15:24:19.489Z"
+    },
+    {
+      "id": "65ada05e-5f72-4ecf-8d21-e86d19bb4abf",
+      "user_id": "dbc08b8b-77ee-4968-abc3-5504d1ce1e27",
+      "lesson_id": "5066890f-18a7-420f-87e2-8f158278d678",
+      "completed": true,
+      "quiz_score": 100,
+      "updated_at": "2026-10-06T08:39:24.612Z"
+    },
+    {
+      "id": "abbabd99-9036-42de-bc75-f5a0c70ad897",
+      "user_id": "dbc08b8b-77ee-4968-abc3-5504d1ce1e27",
+      "lesson_id": "516ec76e-aadb-4493-b763-7d08b7bfde69",
+      "completed": true,
+      "quiz_score": 100,
+      "updated_at": "2026-10-06T08:51:12.426Z"
+    },
+    {
+      "id": "020d14b9-1855-4cb6-944a-7f8225169fa9",
+      "user_id": "7b3877c1-1787-4a1f-abd3-712132fbdd72",
+      "lesson_id": "b649ca41-a1ea-494a-8fe6-b9fd742185e8",
+      "completed": true,
+      "quiz_score": 100,
+      "updated_at": "2026-10-06T13:06:37.242Z"
+    }
+  ]
+}

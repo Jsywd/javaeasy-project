@@ -1,0 +1,6 @@
+{
+  "name": "Java Easy Learn",
+  "description": "ระบบเรียนรู้และสอนภาษา Java เบื้องต้นภาษาไทย พร้อมแบบทดสอบ แดชบอร์ด และระบบแอดมินจัดการบทเรียน",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

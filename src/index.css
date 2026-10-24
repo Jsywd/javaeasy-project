@@ -1,0 +1,408 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Space Grotesk", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+  
+  /* Brand color custom utilities */
+  --color-brand-bg: #0F172A;
+  --color-brand-card: #1E293B;
+  --color-brand-border: #334155;
+  --color-brand-text-muted: #94A3B8;
+  --color-brand-text: #F8FAFC;
+}
+
+body {
+  background-color: #0F172A;
+  color: #F8FAFC;
+  font-family: var(--font-sans);
+  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+}
+
+/* Global transitions for a smooth theme toggle experience */
+*, *::before, *::after {
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* SMART THEME SWITCHING SELECTORS FOR LIGHT MODE */
+:root:not(.dark) {
+  /* Dynamic colors for light mode */
+  body {
+    background-color: #F8FAFC !important;
+    color: #0F172A !important;
+  }
+
+  /* Layout and card backgrounds */
+  .bg-\[\#0F172A\] {
+    background-color: #F8FAFC !important;
+  }
+  .bg-\[\#1E293B\] {
+    background-color: #FFFFFF !important;
+  }
+  .bg-\[\#0F172A\]\/95 {
+    background-color: rgba(255, 255, 255, 0.95) !important;
+  }
+  .bg-\[\#0F172A\]\/90 {
+    background-color: rgba(255, 255, 255, 0.9) !important;
+  }
+  .bg-\[\#0F172A\]\/80 {
+    background-color: rgba(255, 255, 255, 0.8) !important;
+  }
+  .bg-\[\#0F172A\]\/40 {
+    background-color: rgba(241, 245, 249, 0.4) !important;
+  }
+  .bg-\[\#0F172A\]\/30 {
+    background-color: rgba(241, 245, 249, 0.3) !important;
+  }
+  .bg-\[\#1E293B\]\/90 {
+    background-color: rgba(255, 255, 255, 0.95) !important;
+  }
+  .bg-\[\#1E293B\]\/80 {
+    background-color: rgba(255, 255, 255, 0.9) !important;
+  }
+  .bg-\[\#1E293B\]\/70 {
+    background-color: rgba(255, 255, 255, 0.8) !important;
+  }
+  .bg-slate-800 {
+    background-color: #E2E8F0 !important;
+  }
+  .bg-slate-850 {
+    background-color: #F1F5F9 !important;
+  }
+  .bg-slate-900,
+  .bg-slate-900\/50,
+  .bg-slate-900\/40 {
+    background-color: #F1F5F9 !important;
+  }
+  .bg-\[\#141E33\] {
+    background-color: #F1F5F9 !important;
+  }
+  .bg-\[\#1E293B\]\/30 {
+    background-color: rgba(255, 255, 255, 0.3) !important;
+  }
+
+  /* Borders override */
+  .border-slate-800,
+  .border-slate-800\/80,
+  .border-slate-800\/60,
+  .border-slate-800\/40,
+  .border-slate-700\/60, 
+  .border-slate-700\/50, 
+  .border-slate-700\/40, 
+  .border-slate-700 {
+    border-color: #E2E8F0 !important;
+  }
+
+  /* Text override - Adapt slate texts for light mode */
+  .text-slate-100, 
+  .text-slate-200 {
+    color: #0F172A !important;
+  }
+  .text-slate-300, 
+  .text-slate-400 {
+    color: #475569 !important;
+  }
+  .text-slate-500 {
+    color: #64748B !important;
+  }
+
+  /* Adapt standalone white headings/paragraphs on light backgrounds */
+  article h1, article h2, article h3,
+  #home-view h1, #home-view h2, #home-view h3,
+  #admin-view h1, #admin-view h2, #admin-view h3, #admin-view h4, #admin-view h5,
+  aside h1, aside h2, aside h3,
+  header h1, header h2, header h3,
+  #learner-stats-card h1, #learner-stats-card h2, #learner-stats-card h3,
+  #student-analytics-section h1, #student-analytics-section h2, #student-analytics-section h3 {
+    color: #0F172A !important;
+  }
+
+  #admin-view .text-white:not(button.bg-indigo-600):not(button.bg-indigo-600 *):not(button.bg-indigo-700):not(button.bg-indigo-700 *):not(button.bg-rose-600):not(button.bg-rose-600 *):not(.btn-primary):not(.btn-primary *),
+  #student-analytics-section .text-white:not(button):not(button *),
+  #learner-stats-card .text-white:not(button):not(button *),
+  header .text-white:not(button):not(button *),
+  aside .text-white:not(button):not(button *) {
+    color: #0F172A !important;
+  }
+
+  /* PROTECT WHITE TEXT on primary buttons with solid backgrounds */
+  .btn-primary,
+  .btn-primary *,
+  #continue-learning-btn,
+  #continue-learning-btn *,
+  #goto-step2-quiz-btn,
+  #goto-step2-quiz-btn *,
+  #hero-register-btn,
+  #hero-register-btn *,
+  #hero-start-learning-btn,
+  #hero-start-learning-btn *,
+  #nav-login-btn,
+  #nav-login-btn *,
+  .\!text-white,
+  .\!text-white * {
+    color: #FFFFFF !important;
+    fill: #FFFFFF !important;
+  }
+
+  /* Specific sidebar navigation items in light mode */
+  aside button.bg-indigo-50,
+  aside button.bg-indigo-50 *,
+  #sidebar-all-lessons-btn.bg-indigo-50,
+  #sidebar-all-lessons-btn.bg-indigo-50 * {
+    color: #4338CA !important;
+  }
+
+  /* Continue learning spotlight card in light mode */
+  #continue-learning-card {
+    background: linear-gradient(135deg, #EEF2FF 0%, #FFFFFF 50%, #F1F5F9 100%) !important;
+    border-color: #C7D2FE !important;
+    box-shadow: 0 10px 25px -5px rgba(99, 102, 241, 0.1), 0 8px 10px -6px rgba(99, 102, 241, 0.05) !important;
+  }
+  #continue-learning-card h3 {
+    color: #0F172A !important;
+  }
+  #continue-learning-card p {
+    color: #475569 !important;
+  }
+
+  /* Theme toggle button in light mode */
+  #theme-toggle-btn {
+    background-color: #FFFFFF !important;
+    border-color: #E2E8F0 !important;
+    color: #4F46E5 !important;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+  }
+  #theme-toggle-btn:hover {
+    background-color: #F8FAFC !important;
+    border-color: #CBD5E1 !important;
+  }
+  
+  /* Hero banner in Light/White Mode */
+  #hero-banner {
+    background: linear-gradient(135deg, #EEF2FF 0%, #FFFFFF 50%, #FAF5FF 100%) !important;
+    border-color: #C7D2FE !important;
+    box-shadow: 0 10px 25px -5px rgba(99, 102, 241, 0.08), 0 8px 10px -6px rgba(99, 102, 241, 0.04) !important;
+  }
+  #hero-banner h2 {
+    color: #0F172A !important;
+  }
+  #hero-banner p {
+    color: #475569 !important;
+  }
+  #hero-banner .hero-badge {
+    background-color: #EEF2FF !important;
+    border-color: #C7D2FE !important;
+    color: #4338CA !important;
+  }
+  #hero-banner #hero-start-learning-btn {
+    background: linear-gradient(to right, #4F46E5, #6366F1) !important;
+    color: #FFFFFF !important;
+    box-shadow: 0 4px 14px 0 rgba(79, 70, 229, 0.3) !important;
+  }
+  #hero-banner #hero-start-learning-btn * {
+    color: #FFFFFF !important;
+    fill: #FFFFFF !important;
+  }
+  #hero-banner #hero-login-btn {
+    background-color: #FFFFFF !important;
+    border-color: #CBD5E1 !important;
+    color: #1E293B !important;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+  }
+  #hero-banner #hero-login-btn:hover {
+    background-color: #F8FAFC !important;
+    border-color: #94A3B8 !important;
+  }
+  
+  /* Sidebar items navigation and hover overlays */
+  .hover\:bg-slate-800\/50:hover {
+    background-color: #F1F5F9 !important;
+  }
+  .text-slate-400.hover\:text-slate-200:hover {
+    color: #0F172A !important;
+  }
+  .bg-indigo-600\/10 {
+    background-color: rgba(79, 70, 229, 0.08) !important;
+  }
+  .border-indigo-500\/20 {
+    border-color: rgba(79, 70, 229, 0.2) !important;
+  }
+
+  /* Forms & Interactive controls */
+  input, textarea, select {
+    background-color: #FFFFFF !important;
+    color: #0F172A !important;
+    border-color: #CBD5E1 !important;
+  }
+  input::placeholder, textarea::placeholder {
+    color: #94A3B8 !important;
+  }
+  input:focus, textarea:focus, select:focus {
+    border-color: #6366F1 !important;
+    --tw-ring-color: rgba(99, 102, 241, 0.1) !important;
+  }
+
+  /* Tables & Lists */
+  .divide-slate-700\/50 > * + * {
+    border-color: #E2E8F0 !important;
+  }
+  tr.hover\:bg-\[\#0F172A\]\/30:hover {
+    background-color: rgba(241, 245, 249, 0.5) !important;
+  }
+
+  /* Code Syntax Highlighter blocks - refined for premium light readability */
+  #code-block-container {
+    background-color: #F8FAFC !important;
+    border-color: #E2E8F0 !important;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.03), 0 2px 4px -1px rgba(0, 0, 0, 0.02) !important;
+  }
+  #code-block-header {
+    background-color: #F1F5F9 !important;
+    border-color: #E2E8F0 !important;
+    color: #475569 !important;
+  }
+  #copy-code-btn {
+    background-color: #FFFFFF !important;
+    border-color: #CBD5E1 !important;
+    color: #475569 !important;
+  }
+  #copy-code-btn:hover {
+    background-color: #F1F5F9 !important;
+    color: #0F172A !important;
+  }
+  
+  /* Prism Syntax Highlighting Tokens (Dark & Light) */
+  .token.comment, .token.prolog, .token.doctype, .token.cdata {
+    color: #64748B;
+    font-style: italic;
+  }
+  .token.punctuation {
+    color: #94A3B8;
+  }
+  .token.property, .token.tag, .token.boolean, .token.number, .token.constant, .token.symbol, .token.deleted {
+    color: #FBBF24;
+  }
+  .token.selector, .token.attr-name, .token.string, .token.char, .token.builtin, .token.inserted {
+    color: #34D399;
+  }
+  .token.operator, .token.entity, .token.url, .language-css .token.string, .style .token.string {
+    color: #94A3B8;
+  }
+  .token.atrule, .token.attr-value, .token.keyword {
+    color: #F43F5E;
+    font-weight: 600;
+  }
+  .token.function, .token.class-name {
+    color: #38BDF8;
+    font-weight: 600;
+  }
+  .token.regex, .token.important, .token.variable {
+    color: #818CF8;
+  }
+
+  /* Java Syntax highlights tailored to elegant light mode */
+  .text-slate-500.italic {
+    color: #708090 !important; /* Muted slate comments */
+  }
+  .text-emerald-400, .token.string, .token.char {
+    color: #0F766E !important; /* Deep teal/emerald for strings */
+  }
+  .text-amber-400, .token.number, .token.constant {
+    color: #B45309 !important; /* Warm amber for numeric constants */
+  }
+  .text-rose-400, .token.keyword, .token.boolean {
+    color: #BE123C !important; /* Bold crimson for keywords */
+  }
+  .text-indigo-400, .token.regex, .token.variable {
+    color: #4338CA !important; /* Deep indigo for types */
+  }
+  .text-sky-400, .token.class-name {
+    color: #0369A1 !important; /* Sky blue for classes */
+  }
+  .text-blue-400, .token.function {
+    color: #1D4ED8 !important; /* Royal blue for method invocations */
+  }
+
+  /* Quizzes view styling in Light Mode */
+  #quiz-active-container,
+  #quiz-finished-card,
+  #quiz-review-section,
+  [id^="review-question-"] {
+    background-color: #FFFFFF !important;
+    border-color: #E2E8F0 !important;
+    color: #0F172A !important;
+  }
+  #quiz-active-container h3,
+  #quiz-active-container h4,
+  #quiz-finished-card h3,
+  #quiz-finished-card h4,
+  #quiz-review-section h3,
+  [id^="review-question-"] h3,
+  [id^="review-question-"] .text-white {
+    color: #0F172A !important;
+  }
+  .border-dashed {
+    border-color: #CBD5E1 !important;
+  }
+  .border-indigo-500\/40 {
+    border-color: rgba(99, 102, 241, 0.4) !important;
+  }
+  .bg-\[\#1E293B\] {
+    background-color: #FFFFFF !important;
+  }
+  .bg-\[\#243044\],
+  .bg-\[\#2A364F\],
+  .bg-\[\#1E2638\] {
+    background-color: #F8FAFC !important;
+    border-color: #E2E8F0 !important;
+    color: #0F172A !important;
+  }
+  .hover\:border-indigo-400:hover {
+    border-color: #6366F1 !important;
+  }
+
+  /* SVG Analytics Line Charts adaptation */
+  svg line {
+    stroke: #E2E8F0 !important;
+  }
+  svg text {
+    fill: #64748B !important;
+  }
+  svg circle {
+    fill: #FFFFFF !important;
+  }
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display), var(--font-sans);
+}
+
+.font-mono {
+  font-family: var(--font-mono), monospace;
+}
+
+/* Custom scrollbar for scrollable modal dialogs */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.4);
+  border-radius: 8px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(100, 116, 139, 0.5);
+  border-radius: 8px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.8);
+}
+
+/* Subtle, sleek border in dark mode for hero banner (not overly bright/prominent) */
+.dark #hero-banner {
+  border: 1px solid rgba(51, 65, 85, 0.5) !important;
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.3) !important;
+}
