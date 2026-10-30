@@ -359,7 +359,7 @@ export default function AdminLessons({ lessons, onRefresh, token, onSelectLesson
                       />
                     </div>
                     <div>
-                      <label className="block text-[10px] text-emerald-400 mb-1 font-semibold flex items-center gap-1">
+                      <label className="block text-[10px] text-slate-400 mb-1">
                         <span>ผลลัพธ์ของโปรแกรม (Output ที่ต้องการให้แสดง)</span>
                         <span className="text-slate-500 font-normal">(เว้นว่างได้ถ้าไม่มี)</span>
                       </label>
