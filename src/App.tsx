@@ -1191,7 +1191,7 @@ const handleRegister = async (e: FormEvent) => {
                     <QuizView
                       lessonId={selectedLesson.id}
                       questions={questions}
-                      savedProgress={currentProgressRecord || null}
+                      savedProgress={currentProgressRecord || undefined}
                       onQuizCompleted={handleQuizCompleted}
                       onBackToContent={() => {
                         setLessonStep("content");

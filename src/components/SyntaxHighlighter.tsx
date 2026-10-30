@@ -79,19 +79,6 @@ export default function SyntaxHighlighter({ code, language = "java", title, outp
         <pre dangerouslySetInnerHTML={{ __html: highlightCode(code, language) }} />
       </div>
 
-      {/* 👇 เพิ่มกล่อง Output ด้านล่าง (จะแสดงเมื่อมีค่า output เท่านั้น) */}
-      {output && output.trim() !== "" && (
-        <div className="border-t border-slate-700/60 bg-[#090D16]">
-          <div className="flex items-center gap-1.5 px-4 py-1.5 bg-[#0F172A]/90 border-b border-slate-800 text-[10px] text-slate-400 font-mono font-bold tracking-wider uppercase">
-            <Terminal size={12} className="text-emerald-400" />
-            <span>ผลลัพธ์การรัน (Output)</span>
-          </div>
-          <div className="p-4 text-xs font-mono text-emerald-400 whitespace-pre-wrap leading-relaxed overflow-x-auto">
-            {output}
-          </div>
-        </div>
-      )}
-
       {/* Themed Output Terminal (Clean Dark Theme, No Bright Green) */}
       {output && output.trim() !== "" && (
         <div id="code-block-output" className="border-t border-slate-200 dark:border-slate-700/60 bg-slate-100/90 dark:bg-[#0B1120]">
