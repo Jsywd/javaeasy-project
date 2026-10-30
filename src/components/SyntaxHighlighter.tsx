@@ -91,6 +91,20 @@ export default function SyntaxHighlighter({ code, language = "java", title, outp
           </div>
         </div>
       )}
+
+      {/* Themed Output Terminal (Clean Dark Theme, No Bright Green) */}
+      {output && output.trim() !== "" && (
+        <div id="code-block-output" className="border-t border-slate-200 dark:border-slate-700/60 bg-slate-100/90 dark:bg-[#0B1120]">
+          <div className="flex items-center gap-2 px-4 py-1.5 bg-slate-200/60 dark:bg-[#0F172A]/80 border-b border-slate-200 dark:border-slate-800 text-[10px] font-mono font-bold tracking-wider text-slate-600 dark:text-slate-400">
+            <span className="text-indigo-600 dark:text-indigo-400">&gt;_</span>
+            <span>ผลลัพธ์การรัน (OUTPUT)</span>
+          </div>
+          <div className="p-4 overflow-x-auto font-mono text-xs leading-relaxed text-slate-800 dark:text-slate-100 font-medium whitespace-pre-wrap">
+            {output}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
+

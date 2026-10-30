@@ -367,7 +367,9 @@ export default function AdminLessons({ lessons, onRefresh, token, onSelectLesson
                         value={ce.output || ""}
                         onChange={(e) => handleCodeExampleChange(idx, "output", e.target.value)}
                         placeholder={"เช่น:\nสวัสดีชาว Java!\nผลลัพธ์คือ: 100"}
-                        className="w-full px-3 py-2 rounded-lg border border-slate-700/80 bg-[#090D16] text-emerald-400 text-xs font-mono min-h-[60px] focus:outline-none focus:border-emerald-500"
+                        className="w-full px-3 py-2 rounded-lg border border-slate-700/80 bg-[#0B1120] text-slate-200
+                         placeholder-slate-600 text-xs font-mono 
+                        min-h-[64px] focus:outline-none focus:border-indigo-500 transition-colors"
                       />
                     </div>
                   </div>
