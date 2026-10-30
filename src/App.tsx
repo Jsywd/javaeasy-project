@@ -1124,20 +1124,70 @@ const handleRegister = async (e: FormEvent) => {
                       )}
                     </div>
 
-                    {/* Render Main Content Text */}
-                    <div className="text-sm sm:text-base leading-relaxed text-slate-700 dark:text-slate-300 whitespace-pre-wrap space-y-4">
-                      {selectedLesson.content}
-                    </div>
+                    {/* Render Content with Inline [code:X] Support */}
+                    {(() => {
+                      const examples = selectedLesson.code_examples || [];
+                      const usedIndexes = new Set<number>();
 
-                    {/* Source Code Examples block */}
-                    {selectedLesson.code_examples && selectedLesson.code_examples.map((ce, index) => (
-                      <div key={index} className="pt-4 space-y-2">
-                        <h4 className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                          โค้ดตัวอย่างที่ {index + 1}: {ce.title}
-                        </h4>
-                        <SyntaxHighlighter code={ce.code} language={ce.language} title={ce.title} output={ce.output} />
-                      </div>
-                    ))}
+                      // แยกเนื้อหาด้วยแท็ก [code:1], [code:2], ...
+                      const parts = (selectedLesson.content || "").split(/(\[code:\d+\])/gi);
+
+                      return (
+                        <div className="space-y-4">
+                          <div className="text-sm sm:text-base leading-relaxed text-slate-700 dark:text-slate-300 space-y-4">
+                            {parts.map((part, pIdx) => {
+                              const match = part.match(/^\[code:(\d+)\]$/i);
+                              if (match) {
+                                const exampleNum = parseInt(match[1], 10);
+                                const exIdx = exampleNum - 1;
+                                const ce = examples[exIdx];
+                                if (ce) {
+                                  usedIndexes.add(exIdx);
+                                  return (
+                                    <div key={pIdx} className="my-4 not-prose">
+                                      <h4 className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
+                                        โค้ดตัวอย่างที่ {exampleNum}: {ce.title}
+                                      </h4>
+                                      <SyntaxHighlighter
+                                        code={ce.code}
+                                        language={ce.language}
+                                        title={ce.title}
+                                        output={ce.output}
+                                      />
+                                    </div>
+                                  );
+                                }
+                                return null;
+                              }
+                              if (!part.trim()) return null;
+                              return (
+                                <div key={pIdx} className="whitespace-pre-wrap">
+                                  {part}
+                                </div>
+                              );
+                            })}
+                          </div>
+
+                          {/* แสดงตัวอย่างโค้ดที่ไม่ได้ถูกเรียกด้วย [code:X] ไว้ด้านล่างเหมือนเดิม */}
+                          {examples.map((ce, index) => {
+                            if (usedIndexes.has(index)) return null;
+                            return (
+                              <div key={index} className="pt-4 space-y-2">
+                                <h4 className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                                  โค้ดตัวอย่างที่ {index + 1}: {ce.title}
+                                </h4>
+                                <SyntaxHighlighter
+                                  code={ce.code}
+                                  language={ce.language}
+                                  title={ce.title}
+                                  output={ce.output}
+                                />
+                              </div>
+                            );
+                          })}
+                        </div>
+                      );
+                    })()}
                   </article>
 
                   {/* BOTTOM STEP 1 -> STEP 2 NAVIGATION CTA CARD */}
