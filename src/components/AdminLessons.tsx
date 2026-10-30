@@ -1,6 +1,7 @@
 import React, { useState, FormEvent } from "react";
 import { Lesson, CodeExample } from "../types";
 import { safeFetchJson } from "../lib/api";
+import { renderFormattedContent } from "../lib/formatContent";
 import { Plus, Edit2, Trash2, Eye, FileText, Check, AlertCircle, Layers } from "lucide-react";
 
 interface AdminLessonsProps {
@@ -21,7 +22,7 @@ export default function AdminLessons({ lessons, onRefresh, token, onSelectLesson
   const [orderIndex, setOrderIndex] = useState(1);
   const [isFree, setIsFree] = useState(false);
   const [codeExamples, setCodeExamples] = useState<CodeExample[]>([
-    { title: "Main.java", code: "public class Main {\n    public static void main(String[] args) {\n        \n    }\n}", language: "java" }
+    { title: "Main.java", code: "public class Main {\n    public static void main(String[] args) {\n        \n    }\n}", language: "java", output: "" }
   ]);
 
   const [error, setError] = useState("");
@@ -34,7 +35,7 @@ export default function AdminLessons({ lessons, onRefresh, token, onSelectLesson
     setContent("");
     setOrderIndex(lessons.length + 1);
     setIsFree(false);
-    setCodeExamples([{ title: "Main.java", code: "public class Main {\n    public static void main(String[] args) {\n        \n    }\n}", language: "java", output: ""  }]);
+    setCodeExamples([{ title: "Main.java", code: "public class Main {\n    public static void main(String[] args) {\n        \n    }\n}", language: "java", output: "" }]);
     setEditId(null);
     setIsEditing(false);
     setError("");
@@ -61,14 +62,14 @@ export default function AdminLessons({ lessons, onRefresh, token, onSelectLesson
   };
 
   const handleAddCodeExample = () => {
-    setCodeExamples([...codeExamples, { title: "Example.java", code: "", language: "java", output: ""  }]);
+    setCodeExamples([...codeExamples, { title: "Example.java", code: "", language: "java", output: "" }]);
   };
 
   const handleRemoveCodeExample = (idx: number) => {
     setCodeExamples(codeExamples.filter((_, i) => i !== idx));
   };
 
-  const handleCodeExampleChange = (idx: number, field: "title" | "code"| "output", val: string) => {
+  const handleCodeExampleChange = (idx: number, field: "title" | "code" | "output", val: string) => {
     const updated = [...codeExamples];
     updated[idx] = { ...updated[idx], [field]: val };
     setCodeExamples(updated);
@@ -217,29 +218,82 @@ export default function AdminLessons({ lessons, onRefresh, token, onSelectLesson
           )}
 
           {previewMode ? (
-            /* MARKDOWN PREVIEW MODE */
+            /* MARKDOWN & INLINE CODE PREVIEW MODE */
             <div id="lesson-preview" className="prose prose-invert max-w-none border border-slate-700/50 p-6 rounded-xl bg-[#0F172A] min-h-[300px]">
               <h2 className="text-xl font-bold mb-3 text-white">{title || "ไม่ได้ระบุหัวข้อบทเรียน"}</h2>
               <div className="text-xs text-slate-400 mb-6">
                 ลำดับที่: {orderIndex} | {isFree ? "บทเรียนเรียนฟรี" : "ต้องล็อกอินเข้าชม"}
               </div>
-              <div className="text-xs space-y-4 whitespace-pre-wrap leading-relaxed text-slate-300">
-                {content || "ไม่มีคำอธิบายเนื้อหา"}
-              </div>
+              <div className="text-xs space-y-4 leading-relaxed text-slate-300">
+                {(() => {
+                  const used = new Set<number>();
+                  const parts = (content || "").split(/(\[code:\d+\])/gi);
 
-              {codeExamples.length > 0 && codeExamples[0].code && (
-                <div className="mt-8">
-                  <h4 className="text-xs font-semibold mb-2 uppercase tracking-wider text-slate-400">ตัวอย่างซอร์สโค้ดที่จะแสดง:</h4>
-                  {codeExamples.map((ce, i) => (
-                    <div key={i} className="mb-4">
-                      <div className="text-xs font-mono font-bold text-indigo-400 mb-1">{ce.title}</div>
-                      <pre className="p-4 rounded-lg bg-[#0F172A] text-slate-200 border border-slate-700/50 font-mono text-xs overflow-x-auto">
-                        {ce.code}
-                      </pre>
+                  return (
+                    <div className="space-y-4">
+                      {parts.map((part, pIdx) => {
+                        const m = part.match(/^\[code:(\d+)\]$/i);
+                        if (m) {
+                          const exNum = parseInt(m[1], 10);
+                          const exIdx = exNum - 1;
+                          const ce = codeExamples[exIdx];
+                          if (ce && ce.code) {
+                            used.add(exIdx);
+                            return (
+                              <div key={pIdx} className="my-4 rounded-xl overflow-hidden border border-slate-700/60 bg-[#1E293B]">
+                                <div className="px-4 py-2 bg-[#0F172A] border-b border-slate-700/50 text-xs font-mono font-bold text-indigo-400">
+                                  ตัวอย่างที่ {exNum}: {ce.title}
+                                </div>
+                                <pre className="p-4 bg-[#0F172A]/50 text-slate-200 font-mono text-xs overflow-x-auto m-0">
+                                  {ce.code}
+                                </pre>
+                                {ce.output && (
+                                  <div className="border-t border-slate-700/60 bg-[#0B1120]">
+                                    <div className="px-4 py-1.5 bg-[#0F172A]/80 border-b border-slate-800 text-[10px] font-mono font-bold text-slate-400 flex items-center gap-1.5">
+                                      <span className="text-indigo-400">&gt;_</span>
+                                      <span>ผลลัพธ์การรัน (OUTPUT)</span>
+                                    </div>
+                                    <div className="p-4 font-mono text-xs text-slate-200 whitespace-pre-wrap">
+                                      {ce.output}
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          }
+                        }
+                        return <div key={pIdx}>{renderFormattedContent(part)}</div>;
+                      })}
+
+                      {/* Display any code examples that were not placed inline */}
+                      {codeExamples.map((ce, i) => {
+                        if (used.has(i) || !ce.code.trim()) return null;
+                        return (
+                          <div key={i} className="my-4 rounded-xl overflow-hidden border border-slate-700/60 bg-[#1E293B]">
+                            <div className="px-4 py-2 bg-[#0F172A] border-b border-slate-700/50 text-xs font-mono font-bold text-indigo-400">
+                              โค้ดตัวอย่างที่ {i + 1}: {ce.title}
+                            </div>
+                            <pre className="p-4 bg-[#0F172A]/50 text-slate-200 font-mono text-xs overflow-x-auto m-0">
+                              {ce.code}
+                            </pre>
+                            {ce.output && (
+                              <div className="border-t border-slate-700/60 bg-[#0B1120]">
+                                <div className="px-4 py-1.5 bg-[#0F172A]/80 border-b border-slate-800 text-[10px] font-mono font-bold text-slate-400 flex items-center gap-1.5">
+                                  <span className="text-indigo-400">&gt;_</span>
+                                  <span>ผลลัพธ์การรัน (OUTPUT)</span>
+                                </div>
+                                <div className="p-4 font-mono text-xs text-slate-200 whitespace-pre-wrap">
+                                  {ce.output}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
                     </div>
-                  ))}
-                </div>
-              )}
+                  );
+                })()}
+              </div>
             </div>
           ) : (
             /* FORM CONTROLS */
@@ -288,14 +342,50 @@ export default function AdminLessons({ lessons, onRefresh, token, onSelectLesson
               </div>
 
               <div>
-                <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-400 uppercase mb-2 flex items-center justify-between">
-                  <span>เนื้อหาบทเรียน *</span>
-                  <span className="text-[10px] font-normal text-slate-500">แนะนำ: รองรับการขึ้นบรรทัดใหม่ และเครื่องมือจัดรูปข้อความ</span>
-                </label>
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-2">
+                  <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-400 uppercase">
+                    เนื้อหาบทเรียน *
+                  </label>
+                  <div className="flex flex-wrap items-center gap-1.5 text-[10px] text-slate-400">
+                    <span className="font-semibold text-slate-500">พิมพ์ตกแต่ง:</span>
+                    <button
+                      type="button"
+                      onClick={() => setContent((prev) => prev + " **ข้อความตัวหนา** ")}
+                      className="px-1.5 py-0.5 rounded bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold border border-slate-300 dark:border-slate-700 cursor-pointer"
+                      title="ใส่ตัวหนา"
+                    >
+                      **ตัวหนา**
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setContent((prev) => prev + "\n## หัวข้อย่อยใหญ่\n")}
+                      className="px-1.5 py-0.5 rounded bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold border border-slate-300 dark:border-slate-700 cursor-pointer"
+                      title="ใส่หัวข้อตัวใหญ่"
+                    >
+                      ## หัวข้อใหญ่
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setContent((prev) => prev + "\n### หัวข้อย่อย\n")}
+                      className="px-1.5 py-0.5 rounded bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold border border-slate-300 dark:border-slate-700 cursor-pointer"
+                      title="ใส่หัวข้อย่อย"
+                    >
+                      ### หัวข้อย่อย
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setContent((prev) => prev + "\n\n[code:1]\n\n")}
+                      className="px-1.5 py-0.5 rounded bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/60 dark:hover:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300 font-mono font-bold border border-indigo-200 dark:border-indigo-500/40 cursor-pointer"
+                      title="แทรกโค้ดตัวอย่างที่ 1"
+                    >
+                      [code:1]
+                    </button>
+                  </div>
+                </div>
                 <textarea
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
-                  placeholder="พิมพ์เนื้อหาการสอนทฤษฎี อธิบายคำสั่ง ข้อดีของการใช้คำสั่ง และข้อควรระวังในบทเรียน..."
+                  placeholder="พิมพ์เนื้อหาการสอนทฤษฎี... รองรับ ## หัวข้อใหญ่, ### หัวข้อย่อย, **ตัวหนา**, และ [code:1] แทรกโค้ด"
                   className="w-full px-4 py-3 rounded-xl border border-slate-300 dark:border-slate-700/60 bg-white dark:bg-[#0F172A] text-slate-900 dark:text-white text-xs font-sans min-h-[220px] focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 leading-relaxed"
                   required
                 />
