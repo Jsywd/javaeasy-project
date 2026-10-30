@@ -14,6 +14,7 @@ export interface CodeExample {
   title: string;
   code: string;
   language: string;
+  output?: string;
 }
 
 export interface Lesson {

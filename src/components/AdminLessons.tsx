@@ -34,7 +34,7 @@ export default function AdminLessons({ lessons, onRefresh, token, onSelectLesson
     setContent("");
     setOrderIndex(lessons.length + 1);
     setIsFree(false);
-    setCodeExamples([{ title: "Main.java", code: "public class Main {\n    public static void main(String[] args) {\n        \n    }\n}", language: "java" }]);
+    setCodeExamples([{ title: "Main.java", code: "public class Main {\n    public static void main(String[] args) {\n        \n    }\n}", language: "java", output: ""  }]);
     setEditId(null);
     setIsEditing(false);
     setError("");
@@ -52,7 +52,7 @@ export default function AdminLessons({ lessons, onRefresh, token, onSelectLesson
     setOrderIndex(lesson.order_index);
     setIsFree(lesson.is_free);
     setCodeExamples(lesson.code_examples && lesson.code_examples.length > 0 ? [...lesson.code_examples] : [
-      { title: "Main.java", code: "", language: "java" }
+      { title: "Main.java", code: "", language: "java", output: "" }
     ]);
     setEditId(lesson.id);
     setIsEditing(true);
@@ -61,14 +61,14 @@ export default function AdminLessons({ lessons, onRefresh, token, onSelectLesson
   };
 
   const handleAddCodeExample = () => {
-    setCodeExamples([...codeExamples, { title: "Example.java", code: "", language: "java" }]);
+    setCodeExamples([...codeExamples, { title: "Example.java", code: "", language: "java", output: ""  }]);
   };
 
   const handleRemoveCodeExample = (idx: number) => {
     setCodeExamples(codeExamples.filter((_, i) => i !== idx));
   };
 
-  const handleCodeExampleChange = (idx: number, field: "title" | "code", val: string) => {
+  const handleCodeExampleChange = (idx: number, field: "title" | "code"| "output", val: string) => {
     const updated = [...codeExamples];
     updated[idx] = { ...updated[idx], [field]: val };
     setCodeExamples(updated);
@@ -356,6 +356,18 @@ export default function AdminLessons({ lessons, onRefresh, token, onSelectLesson
                         placeholder="public class Demo { ... }"
                         className="w-full px-3 py-2 rounded-lg border border-slate-700 bg-[#0F172A] text-slate-200 text-xs font-mono min-h-[100px] focus:outline-none focus:border-indigo-500"
                         required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] text-emerald-400 mb-1 font-semibold flex items-center gap-1">
+                        <span>ผลลัพธ์ของโปรแกรม (Output ที่ต้องการให้แสดง)</span>
+                        <span className="text-slate-500 font-normal">(เว้นว่างได้ถ้าไม่มี)</span>
+                      </label>
+                      <textarea
+                        value={ce.output || ""}
+                        onChange={(e) => handleCodeExampleChange(idx, "output", e.target.value)}
+                        placeholder={"เช่น:\nสวัสดีชาว Java!\nผลลัพธ์คือ: 100"}
+                        className="w-full px-3 py-2 rounded-lg border border-slate-700/80 bg-[#090D16] text-emerald-400 text-xs font-mono min-h-[60px] focus:outline-none focus:border-emerald-500"
                       />
                     </div>
                   </div>

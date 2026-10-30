@@ -1135,7 +1135,7 @@ const handleRegister = async (e: FormEvent) => {
                         <h4 className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                           โค้ดตัวอย่างที่ {index + 1}: {ce.title}
                         </h4>
-                        <SyntaxHighlighter code={ce.code} language={ce.language} title={ce.title} />
+                        <SyntaxHighlighter code={ce.code} language={ce.language} title={ce.title} output={ce.output} />
                       </div>
                     ))}
                   </article>

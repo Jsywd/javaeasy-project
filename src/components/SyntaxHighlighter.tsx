@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Check, Copy } from "lucide-react";
+import { Check, Copy, Terminal } from "lucide-react";
 import Prism from "prismjs";
 import "prismjs/components/prism-java";
 import "prismjs/components/prism-javascript";
@@ -10,9 +10,10 @@ interface SyntaxHighlighterProps {
   code: string;
   language?: string;
   title?: string;
+  output?: string; // 👈 เพิ่มรับ output
 }
 
-export default function SyntaxHighlighter({ code, language = "java", title }: SyntaxHighlighterProps) {
+export default function SyntaxHighlighter({ code, language = "java", title, output }: SyntaxHighlighterProps) {
   const [copied, setCopied] = useState(false);
 
   const handleCopy = async () => {
@@ -25,7 +26,6 @@ export default function SyntaxHighlighter({ code, language = "java", title }: Sy
     }
   };
 
-  // Robust lexical token highlighting with Prism.js (prevents nested regex HTML injection bugs)
   const highlightCode = (rawCode: string, lang: string) => {
     if (!rawCode) return "";
     const cleanLang = (lang || "java").toLowerCase();
@@ -39,7 +39,6 @@ export default function SyntaxHighlighter({ code, language = "java", title }: Sy
       }
     }
 
-    // Safe fallback escaping
     return rawCode
       .replace(/&/g, "&amp;")
       .replace(/</g, "&lt;")
@@ -48,6 +47,7 @@ export default function SyntaxHighlighter({ code, language = "java", title }: Sy
 
   return (
     <div id="code-block-container" className="my-6 overflow-hidden rounded-xl border border-slate-700/60 bg-[#1E293B] shadow-lg transition-all">
+      {/* Header Bar */}
       <div id="code-block-header" className="flex items-center justify-between px-4 py-2 bg-[#0F172A] border-b border-slate-700/50 text-[10px] text-slate-400 font-bold uppercase tracking-wider">
         <span className="font-mono flex items-center gap-1.5">
           <span className="w-2.5 h-2.5 rounded-full bg-rose-500/80"></span>
@@ -73,9 +73,24 @@ export default function SyntaxHighlighter({ code, language = "java", title }: Sy
           )}
         </button>
       </div>
+
+      {/* Code Body */}
       <div id="code-block-body" className="p-4 overflow-x-auto text-xs md:text-xs font-mono leading-relaxed text-slate-300">
         <pre dangerouslySetInnerHTML={{ __html: highlightCode(code, language) }} />
       </div>
+
+      {/* 👇 เพิ่มกล่อง Output ด้านล่าง (จะแสดงเมื่อมีค่า output เท่านั้น) */}
+      {output && output.trim() !== "" && (
+        <div className="border-t border-slate-700/60 bg-[#090D16]">
+          <div className="flex items-center gap-1.5 px-4 py-1.5 bg-[#0F172A]/90 border-b border-slate-800 text-[10px] text-slate-400 font-mono font-bold tracking-wider uppercase">
+            <Terminal size={12} className="text-emerald-400" />
+            <span>ผลลัพธ์การรัน (Output)</span>
+          </div>
+          <div className="p-4 text-xs font-mono text-emerald-400 whitespace-pre-wrap leading-relaxed overflow-x-auto">
+            {output}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
