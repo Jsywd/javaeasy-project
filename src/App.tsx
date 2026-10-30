@@ -11,6 +11,7 @@ import AdminUsers from "./components/AdminUsers";
 import AdminAnalytics from "./components/AdminAnalytics";
 import StudentAnalyticsChart from "./components/StudentAnalyticsChart";
 import MobileChapterSwitcher from "./components/MobileChapterSwitcher";
+import { renderFormattedContent } from "./lib/formatContent";
 import {
   BookOpen,
   GraduationCap,
@@ -1161,8 +1162,8 @@ const handleRegister = async (e: FormEvent) => {
                               }
                               if (!part.trim()) return null;
                               return (
-                                <div key={pIdx} className="whitespace-pre-wrap">
-                                  {part}
+                                <div key={pIdx}>
+                                  {renderFormattedContent(part)}
                                 </div>
                               );
                             })}
