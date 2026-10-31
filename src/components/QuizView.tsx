@@ -190,27 +190,37 @@ export default function QuizView({
   const currentQuestion = activeQuestions[currentIdx];
   if (!currentQuestion) return null;
 
-  // Determine if drag_drop is slot-fill or reorder
-  // Slot-fill is ONLY when there is an explicit fill-in-the-blank template (containing ___),
-  // OR when explicitly marked or has single slot.
-  const hasTemplateWithBlank = Boolean(currentQuestion.template_code && currentQuestion.template_code.includes("___"));
-  const isExplicitReorder = currentQuestion.is_reorder === true || (Array.isArray(currentQuestion.correct_answer) && currentQuestion.correct_answer.length > 1);
+// ดักจับว่ามีช่องว่าง ___ หรือไม่ (เช็คทั้ง template_code และ question)
+  const hasTemplateWithBlank = Boolean(
+    (currentQuestion.template_code && currentQuestion.template_code.includes("___")) ||
+    (currentQuestion.question && currentQuestion.question.includes("___"))
+  );
+
+  const isExplicitReorder = Boolean(
+    (currentQuestion as any).is_reorder === true ||
+    (Array.isArray(currentQuestion.correct_answer) && currentQuestion.correct_answer.length > 1)
+  );
+
   const isSlotDragDrop =
     currentQuestion.type === "drag_drop" &&
     !isExplicitReorder &&
     (hasTemplateWithBlank || (!currentQuestion.template_code && currentQuestion.options && currentQuestion.options.length <= 1));
 
-  // Fallback template_code if not specified but is a slot drag_drop question about printing
-  const effectiveTemplateCode = currentQuestion.template_code || (
-    isSlotDragDrop && currentQuestion.options?.some((o: string) => ["print", "println", "Print"].includes(o))
+  // ดึงโค้ดต้นแบบมาใช้งาน รองรับทั้งกรณีที่เคยพิมพ์ไว้ใน question หรือ template_code
+  const effectiveTemplateCode = (
+    (currentQuestion.template_code && currentQuestion.template_code.includes("___") ? currentQuestion.template_code : "") ||
+    (currentQuestion.question && currentQuestion.question.includes("___") ? currentQuestion.question : "") ||
+    (isSlotDragDrop && currentQuestion.options?.some((o: string) => ["print", "println", "Print"].includes(o))
       ? 'System.out.___("Hello World");'
-      : ""
+      : "")
   );
 
-  // Parse template_code into prefix and suffix if slot-fill
+  // ตรวจจับโค้ดหลายบรรทัด
   const hasTemplate = Boolean(effectiveTemplateCode && effectiveTemplateCode.includes("___"));
-  const isMultiLineTemplate = Boolean(hasTemplate && effectiveTemplateCode.includes("\n"));
-  const templateLines = isMultiLineTemplate ? effectiveTemplateCode.split("\n") : [];
+  const isMultiLineTemplate = Boolean(hasTemplate && /[\r\n]/.test(effectiveTemplateCode));
+  const templateLines = isMultiLineTemplate
+    ? effectiveTemplateCode.replace(/\r\n/g, "\n").replace(/\r/g, "\n").split("\n")
+    : [];
   const [prefixCode, suffixCode] = hasTemplate && !isMultiLineTemplate && effectiveTemplateCode
     ? effectiveTemplateCode.split("___")
     : ["", ""];
@@ -1029,6 +1039,7 @@ export default function QuizView({
       </div>
 
       {/* Question Text */}
+      {/* Question Text */}
       <div className="mb-6 text-center sm:text-left">
         <span className="inline-block text-[10px] font-bold px-2.5 py-0.5 rounded bg-indigo-50 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-500/20 mb-3">
           {currentQuestion.type === "multiple_choice"
@@ -1037,11 +1048,17 @@ export default function QuizView({
             ? "ลากหรือแตะวางตัวเลือกใส่ในช่องว่าง (Drag & Drop)"
             : "จัดเรียงโค้ดให้ถูกต้อง (Drag & Drop)"}
         </span>
-        <h4 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white leading-relaxed font-sans">
-          {renderQuestionTitle(currentQuestion.question)}
-        </h4>
+        <div className="text-base sm:text-lg font-bold text-slate-900 dark:text-white leading-relaxed font-sans">
+          {isSlotDragDrop && hasTemplate && (
+            currentQuestion.question.trim() === effectiveTemplateCode.trim() ||
+            currentQuestion.question.replace(/\r\n/g, "\n").trim() === effectiveTemplateCode.replace(/\r\n/g, "\n").trim() ||
+            currentQuestion.question.includes("___") ||
+            !currentQuestion.question.trim()
+          )
+            ? "จงเลือกคำตอบที่ถูกต้องมาเติมลงในช่องว่างของโค้ดให้สมบูรณ์"
+            : renderQuizQuestionContent(currentQuestion.question)}
+        </div>
       </div>
-
       {/* Interactive Question Body */}
       <div className="mb-8">
         {currentQuestion.type === "multiple_choice" ? (
@@ -1105,40 +1122,101 @@ export default function QuizView({
               onDrop={(e) => handleDrop(e, "placed")}
             >
               {hasTemplate ? (
-                <div className="flex flex-wrap items-center justify-center gap-2 font-mono text-sm sm:text-base text-slate-900 dark:text-slate-100 font-bold select-none">
-                  {prefixCode && <span>{prefixCode}</span>}
+                isMultiLineTemplate ? (
+                  /* Multi-line code template with embedded drop slot */
+                  <div className="w-full max-w-2xl mx-auto rounded-xl border border-slate-300 dark:border-slate-700/80 bg-white dark:bg-[#0F172A] p-4 sm:p-5 shadow-md overflow-x-auto text-left font-mono">
+                    <div className="flex items-center gap-1.5 mb-3 pb-2 border-b border-slate-200 dark:border-slate-800 text-[11px] text-slate-500 dark:text-slate-400">
+                      <div className="flex gap-1.5 mr-2">
+                        <span className="w-2.5 h-2.5 rounded-full bg-rose-500/80 inline-block"></span>
+                        <span className="w-2.5 h-2.5 rounded-full bg-amber-500/80 inline-block"></span>
+                        <span className="w-2.5 h-2.5 rounded-full bg-emerald-500/80 inline-block"></span>
+                      </div>
+                      <span className="font-sans font-bold text-xs text-indigo-600 dark:text-indigo-400">เติมโค้ดในช่องว่าง (Drag & Drop หรือแตะวางในช่อง)</span>
+                    </div>
 
-                  {/* The Drop / Click Target Slot */}
-                  <div
-                    onClick={() => placedBlocks.length > 0 && handleBlockClick(placedBlocks[0], "placed")}
-                    className={`inline-flex items-center justify-center px-4 py-2 min-w-[130px] sm:min-w-[140px] h-[44px] rounded-xl transition-all select-none ${
-                      placedBlocks.length === 0
-                        ? isDragOverSlot
-                          ? "bg-indigo-100 dark:bg-indigo-600/30 border-2 border-indigo-500 border-dashed text-indigo-700 dark:text-indigo-200"
-                          : "bg-indigo-50/80 dark:bg-indigo-950/60 border-2 border-dashed border-indigo-400 dark:border-indigo-400/80 text-indigo-700 dark:text-indigo-300 hover:border-indigo-600 hover:bg-indigo-100/70"
-                        : isAnswerChecked
-                        ? isCorrect
-                          ? "bg-emerald-600 dark:bg-emerald-500/30 border-2 border-emerald-500 text-white dark:text-emerald-300 shadow-md"
-                          : "bg-rose-600 dark:bg-rose-500/30 border-2 border-rose-500 text-white dark:text-rose-300 shadow-md"
-                        : "bg-indigo-600 border-2 border-indigo-500 text-white shadow-md hover:bg-indigo-500 cursor-pointer"
-                    }`}
-                    title={placedBlocks.length > 0 && !isAnswerChecked ? "แตะเพื่อนำออก" : "แตะหรือลากตัวเลือกมาวางที่นี่"}
-                  >
-                    {placedBlocks.length > 0 ? (
-                      <span className="font-mono font-bold text-white tracking-wide flex items-center gap-1.5">
-                        <span>{placedBlocks[0]}</span>
-                        {!isAnswerChecked && <X size={12} className="text-rose-200 hover:text-white" />}
-                      </span>
-                    ) : (
-                      <span className="text-xs font-sans font-bold flex items-center gap-1 text-indigo-600 dark:text-indigo-300">
-                        <MoveHorizontal size={14} className="text-indigo-500 dark:text-indigo-400" />
-                        วางคำตอบที่นี่
-                      </span>
-                    )}
+                    <div className="space-y-1 text-xs sm:text-sm leading-relaxed font-mono">
+                      {templateLines.map((line, lIdx) => {
+                        if (!line.includes("___")) {
+                          return (
+                            <div key={lIdx} className="whitespace-pre font-mono py-0.5 text-slate-800 dark:text-indigo-200">
+                              {line || " "}
+                            </div>
+                          );
+                        }
+                        const [lPrefix, lSuffix] = line.split("___");
+                        return (
+                          <div key={lIdx} className="flex flex-wrap items-center gap-1.5 whitespace-pre font-mono py-1">
+                            <span className="whitespace-pre font-mono text-slate-800 dark:text-indigo-200">{lPrefix}</span>
+                            <div
+                              onClick={() => placedBlocks.length > 0 && handleBlockClick(placedBlocks[0], "placed")}
+                              className={`inline-flex items-center justify-center px-3 py-1 min-w-[120px] sm:min-w-[140px] h-[38px] rounded-lg transition-all select-none font-mono font-bold text-xs cursor-pointer ${
+                                placedBlocks.length === 0
+                                  ? isDragOverSlot
+                                    ? "bg-indigo-100 dark:bg-indigo-600/40 border-2 border-indigo-500 border-dashed text-indigo-700 dark:text-indigo-200 scale-105"
+                                    : "bg-indigo-50/90 dark:bg-[#1E293B] border-2 border-dashed border-indigo-400 dark:border-indigo-400/80 text-indigo-700 dark:text-indigo-300 hover:border-indigo-600 hover:bg-indigo-100/70"
+                                  : isAnswerChecked
+                                  ? isCorrect
+                                    ? "bg-emerald-600 dark:bg-emerald-500/30 border-2 border-emerald-500 text-white dark:text-emerald-300 shadow-md"
+                                    : "bg-rose-600 dark:bg-rose-500/30 border-2 border-rose-500 text-white dark:text-rose-300 shadow-md"
+                                  : "bg-indigo-600 border-2 border-indigo-500 text-white shadow-md hover:bg-indigo-500"
+                              }`}
+                              title={placedBlocks.length > 0 && !isAnswerChecked ? "แตะเพื่อนำออก" : "แตะหรือลากตัวเลือกมาวางที่นี่"}
+                            >
+                              {placedBlocks.length > 0 ? (
+                                <span className="font-mono font-bold text-white tracking-wide flex items-center gap-1.5">
+                                  <span>{placedBlocks[0]}</span>
+                                  {!isAnswerChecked && <X size={12} className="text-rose-200 hover:text-white" />}
+                                </span>
+                              ) : (
+                                <span className="text-xs font-sans font-bold flex items-center gap-1 text-indigo-600 dark:text-indigo-300">
+                                  <MoveHorizontal size={13} className="text-indigo-500 dark:text-indigo-400" />
+                                  วางคำตอบ
+                                </span>
+                              )}
+                            </div>
+                            <span className="whitespace-pre font-mono text-slate-800 dark:text-indigo-200">{lSuffix}</span>
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
+                ) : (
+                  /* Single-line code template */
+                  <div className="flex flex-wrap items-center justify-center gap-2 font-mono text-sm sm:text-base text-slate-900 dark:text-slate-100 font-bold select-none">
+                    {prefixCode && <span>{prefixCode}</span>}
 
-                  {suffixCode && <span>{suffixCode}</span>}
-                </div>
+                    {/* The Drop / Click Target Slot */}
+                    <div
+                      onClick={() => placedBlocks.length > 0 && handleBlockClick(placedBlocks[0], "placed")}
+                      className={`inline-flex items-center justify-center px-4 py-2 min-w-[130px] sm:min-w-[140px] h-[44px] rounded-xl transition-all select-none ${
+                        placedBlocks.length === 0
+                          ? isDragOverSlot
+                            ? "bg-indigo-100 dark:bg-indigo-600/30 border-2 border-indigo-500 border-dashed text-indigo-700 dark:text-indigo-200"
+                            : "bg-indigo-50/80 dark:bg-indigo-950/60 border-2 border-dashed border-indigo-400 dark:border-indigo-400/80 text-indigo-700 dark:text-indigo-300 hover:border-indigo-600 hover:bg-indigo-100/70"
+                          : isAnswerChecked
+                          ? isCorrect
+                            ? "bg-emerald-600 dark:bg-emerald-500/30 border-2 border-emerald-500 text-white dark:text-emerald-300 shadow-md"
+                            : "bg-rose-600 dark:bg-rose-500/30 border-2 border-rose-500 text-white dark:text-rose-300 shadow-md"
+                          : "bg-indigo-600 border-2 border-indigo-500 text-white shadow-md hover:bg-indigo-500 cursor-pointer"
+                      }`}
+                      title={placedBlocks.length > 0 && !isAnswerChecked ? "แตะเพื่อนำออก" : "แตะหรือลากตัวเลือกมาวางที่นี่"}
+                    >
+                      {placedBlocks.length > 0 ? (
+                        <span className="font-mono font-bold text-white tracking-wide flex items-center gap-1.5">
+                          <span>{placedBlocks[0]}</span>
+                          {!isAnswerChecked && <X size={12} className="text-rose-200 hover:text-white" />}
+                        </span>
+                      ) : (
+                        <span className="text-xs font-sans font-bold flex items-center gap-1 text-indigo-600 dark:text-indigo-300">
+                          <MoveHorizontal size={14} className="text-indigo-500 dark:text-indigo-400" />
+                          วางคำตอบที่นี่
+                        </span>
+                      )}
+                    </div>
+
+                    {suffixCode && <span>{suffixCode}</span>}
+                  </div>
+                )
               ) : (
                 <div className="flex flex-col items-center justify-center gap-2">
                   <span className="text-xs text-slate-600 dark:text-slate-400 font-sans">
