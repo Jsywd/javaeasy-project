@@ -439,18 +439,6 @@ export default function AdminQuizzes({ lesson, onBack, token, showToast }: Admin
                 className="w-full px-4 py-3 rounded-xl border border-slate-300 dark:border-slate-700/60 bg-white dark:bg-[#0F172A] text-slate-900 dark:text-white text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 min-h-[110px] font-sans leading-relaxed"
                 required
               />
-
-              {/* Question Live Preview */}
-              {question.trim() && (
-                <div className="mt-2.5 p-3.5 bg-slate-50 dark:bg-[#0F172A] rounded-xl border border-slate-200 dark:border-slate-800 text-xs shadow-inner">
-                  <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
-                    <span>ตัวอย่างการแสดงผลโจทย์ที่ผู้เรียนจะเห็น:</span>
-                  </div>
-                  <div className="text-slate-900 dark:text-white font-semibold">
-                    {renderQuizQuestionContent(question)}
-                  </div>
-                </div>
-              )}
             </div>
 
             {/* Options Management */}
