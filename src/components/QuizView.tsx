@@ -1,5 +1,6 @@
 import React, { useState, useEffect, DragEvent } from "react";
 import { QuizQuestion, UserProgress } from "../types";
+import { renderQuizQuestionContent } from "../lib/formatContent";
 import {
   CheckCircle2,
   XCircle,
@@ -67,7 +68,7 @@ interface QuizViewProps {
   onRequireLogin?: () => void;
   isLoggedIn?: boolean;
   lessonId: string;
-  savedProgress?: UserProgress;
+  savedProgress?: UserProgress | null; // 👈 เพิ่ม | null ตรงนี้
   hasNextLesson?: boolean;
 }
 
@@ -208,7 +209,9 @@ export default function QuizView({
 
   // Parse template_code into prefix and suffix if slot-fill
   const hasTemplate = Boolean(effectiveTemplateCode && effectiveTemplateCode.includes("___"));
-  const [prefixCode, suffixCode] = hasTemplate && effectiveTemplateCode
+  const isMultiLineTemplate = Boolean(hasTemplate && effectiveTemplateCode.includes("\n"));
+  const templateLines = isMultiLineTemplate ? effectiveTemplateCode.split("\n") : [];
+  const [prefixCode, suffixCode] = hasTemplate && !isMultiLineTemplate && effectiveTemplateCode
     ? effectiveTemplateCode.split("___")
     : ["", ""];
 

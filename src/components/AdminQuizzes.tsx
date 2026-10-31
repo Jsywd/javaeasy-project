@@ -1,7 +1,8 @@
 import React, { useState, useEffect, FormEvent } from "react";
 import { Lesson, QuizQuestion } from "../types";
 import { safeFetchJson } from "../lib/api";
-import { Plus, Edit2, Trash2, ArrowLeft, Check, AlertCircle, HelpCircle, Trash, ChevronUp, ChevronDown } from "lucide-react";
+import { renderQuizQuestionContent } from "../lib/formatContent";
+import { Plus, Edit2, Trash2, ArrowLeft, Check, AlertCircle, HelpCircle, Trash, ChevronUp, ChevronDown, Code2 } from "lucide-react";
 
 interface AdminQuizzesProps {
   lesson: Lesson;
@@ -330,21 +331,21 @@ export default function AdminQuizzes({ lesson, onBack, token, showToast }: Admin
               )}
             </div>
 
-            {/* Template Code for Slot Mode */}
+            {/* Template Code for Slot Mode (Supports Multi-line) */}
             {type === "drag_drop" && dragDropMode === "slot" && (
               <div>
                 <div className="flex items-center justify-between mb-1.5">
                   <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-400 uppercase">
-                    โค้ดต้นแบบพร้อมช่องว่าง (ใช้เครื่องหมาย ___ 3 ขีด แทนจุดที่จะให้ผู้เรียนลากคำตอบมาเติม)
+                    โค้ดต้นแบบพร้อมช่องว่าง (ใช้เครื่องหมาย ___ 3 ขีด แทนจุดที่จะให้ผู้เรียนลากคำตอบมาเติม - ใส่ได้หลายบรรทัด)
                   </label>
                   <span className="text-[10px] text-indigo-500 dark:text-indigo-400 font-semibold">จำเป็นต้องมี ___</span>
                 </div>
-                <input
-                  type="text"
+                <textarea
                   value={templateCode}
                   onChange={(e) => setTemplateCode(e.target.value)}
-                  placeholder='เช่น System.out.___("Hello World"); หรือ System.out.___("A");'
-                  className="w-full px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700/60 bg-white dark:bg-[#0F172A] text-indigo-700 dark:text-indigo-300 font-mono text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                  rows={4}
+                  placeholder={`เช่น:\npublic class Main {\n    public static void main(String[] args) {\n        System.out.___("Hello World");\n    }\n}`}
+                  className="w-full px-4 py-3 rounded-xl border border-slate-300 dark:border-slate-700/60 bg-white dark:bg-[#0F172A] text-indigo-700 dark:text-indigo-300 font-mono text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 leading-relaxed"
                   required
                 />
                 {/* Quick Presets */}
@@ -354,7 +355,7 @@ export default function AdminQuizzes({ lesson, onBack, token, showToast }: Admin
                     type="button"
                     onClick={() => {
                       setTemplateCode('System.out.___("Hello World");');
-                      if (!question) setQuestion("Drag and drop the correct method to print Hello World in Java.");
+                      if (!question) setQuestion("จงลากคำสั่งที่ถูกต้องเพื่อแสดงผลข้อความ Hello World");
                     }}
                     className="px-2 py-0.5 rounded text-[10px] font-mono bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-indigo-600 dark:text-indigo-300 border border-slate-200 dark:border-slate-700 transition-colors cursor-pointer"
                   >
@@ -363,12 +364,22 @@ export default function AdminQuizzes({ lesson, onBack, token, showToast }: Admin
                   <button
                     type="button"
                     onClick={() => {
-                      setTemplateCode('System.out.___("A");');
-                      if (!question) setQuestion("จงลากคำสั่งที่ถูกต้องเพื่อแสดงผลตัวอักษร A ออกทางหน้าจอ");
+                      setTemplateCode("public class Main {\n    public static void main(String[] args) {\n        System.out.___(\"Hello World\");\n    }\n}");
+                      if (!question) setQuestion("จงเติมคำสั่งแสดงผลข้อความในเมธอด main ให้สมบูรณ์");
+                    }}
+                    className="px-2 py-0.5 rounded text-[10px] font-mono bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/60 dark:hover:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-500/40 transition-colors cursor-pointer font-bold"
+                  >
+                    + คลาสแบบหลายบรรทัด
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setTemplateCode("for (int i = 0; i < 5; ___) {\n    System.out.println(i);\n}");
+                      if (!question) setQuestion("จงเติมส่วนเพิ่มค่าในลูป for เพื่อให้วนซ้ำทีละ 1");
                     }}
                     className="px-2 py-0.5 rounded text-[10px] font-mono bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-indigo-600 dark:text-indigo-300 border border-slate-200 dark:border-slate-700 transition-colors cursor-pointer"
                   >
-                    System.out.___("A");
+                    for loop หลายบรรทัด
                   </button>
                   <button
                     type="button"
@@ -383,18 +394,63 @@ export default function AdminQuizzes({ lesson, onBack, token, showToast }: Admin
               </div>
             )}
 
-            {/* Question Text */}
+            {/* Question Text with Code Formatting Toolbar */}
             <div>
-              <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-400 uppercase mb-2">
-                โจทย์คำถาม *
-              </label>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-2">
+                <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-400 uppercase">
+                  โจทย์คำถาม *
+                </label>
+                <div className="flex flex-wrap items-center gap-1.5 text-[10px] text-slate-400">
+                  <span className="font-semibold text-slate-500">พิมพ์ตกแต่ง:</span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const sampleCode = '\n```java\nSystem.out.println("Java");\nSystem.out.print("is ");\nSystem.out.println("fun");\n```\n';
+                      setQuestion((prev) => (prev ? prev + sampleCode : "โค้ดต่อไปนี้จะแสดงผลอย่างไร" + sampleCode));
+                    }}
+                    className="px-2 py-0.5 rounded bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/60 dark:hover:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300 font-mono font-bold border border-indigo-200 dark:border-indigo-500/40 cursor-pointer flex items-center gap-1"
+                    title="แทรกบล็อกโค้ด Java"
+                  >
+                    <Code2 size={11} />
+                    <span>+ บล็อกโค้ด Java</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setQuestion((prev) => prev + " **ข้อความตัวหนา** ")}
+                    className="px-1.5 py-0.5 rounded bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold border border-slate-300 dark:border-slate-700 cursor-pointer"
+                    title="ใส่ตัวหนา"
+                  >
+                    **ตัวหนา**
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setQuestion((prev) => prev + " `code` ")}
+                    className="px-1.5 py-0.5 rounded bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-indigo-600 dark:text-indigo-300 font-mono border border-slate-300 dark:border-slate-700 cursor-pointer"
+                    title="ใส่โค้ดในบรรทัด"
+                  >
+                    `code`
+                  </button>
+                </div>
+              </div>
               <textarea
                 value={question}
                 onChange={(e) => setQuestion(e.target.value)}
-                placeholder={type === "multiple_choice" ? "เช่น ชนิดข้อมูลใดต่อไปนี้เก็บตัวอักษรเดียวใน Java?" : "เช่น จงเรียงคำสั่งลูป For เพื่อพิมพ์ข้อความ 5 รอบ"}
-                className="w-full px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700/60 bg-white dark:bg-[#0F172A] text-slate-900 dark:text-white text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 min-h-[80px]"
+                placeholder={'เช่น: โค้ดต่อไปนี้จะแสดงผลอย่างไร\n  System.out.println("Java");\n  System.out.print("is ");\n  System.out.println("fun");'}
+                className="w-full px-4 py-3 rounded-xl border border-slate-300 dark:border-slate-700/60 bg-white dark:bg-[#0F172A] text-slate-900 dark:text-white text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 min-h-[110px] font-sans leading-relaxed"
                 required
               />
+
+              {/* Question Live Preview */}
+              {question.trim() && (
+                <div className="mt-2.5 p-3.5 bg-slate-50 dark:bg-[#0F172A] rounded-xl border border-slate-200 dark:border-slate-800 text-xs shadow-inner">
+                  <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                    <span>ตัวอย่างการแสดงผลโจทย์ที่ผู้เรียนจะเห็น:</span>
+                  </div>
+                  <div className="text-slate-900 dark:text-white font-semibold">
+                    {renderQuizQuestionContent(question)}
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Options Management */}
@@ -413,75 +469,72 @@ export default function AdminQuizzes({ lesson, onBack, token, showToast }: Admin
                       ? "กรอกตัวเลือกทั้งหมด และเลือกเฉลยโดยการคลิกปุ่มวิทยุด้านข้าง"
                       : dragDropMode === "slot"
                       ? "กรอกตัวเลือกทั้งหมด (เช่น 3 ตัวเลือก) และคลิกปุ่มวิทยุเพื่อเลือกข้อที่เป็นเฉลยถูกต้อง"
-                      : "กรอกข้อความแยกเป็นข้อๆ ตามลำดับโค้ดที่ถูกต้องจากบนลงล่าง (ระบบจะสลับตัวเลือกให้ผู้เรียนอัตโนมัติ)"}
+                      : "กรอกข้อความโค้ดในลำดับที่ถูกต้องสมบูรณ์ (ระบบจะสุ่มสลับบล็อกให้อัตโนมัติเมื่อผู้เรียนทำข้อสอบ)"}
                   </p>
                 </div>
                 <button
+                  id="add-option-btn"
                   type="button"
                   onClick={handleAddOption}
-                  className="px-2.5 py-1 text-xs bg-indigo-500/10 text-indigo-400 rounded-lg font-bold hover:bg-indigo-500/20 transition-all cursor-pointer border border-indigo-500/20"
+                  className="px-2.5 py-1 text-xs bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 rounded-lg font-bold transition-all cursor-pointer border border-indigo-500/20"
                 >
                   + เพิ่มตัวเลือก
                 </button>
               </div>
 
               <div className="space-y-3">
-                {options.map((option, idx) => (
+                {options.map((opt, idx) => (
                   <div key={idx} className="flex items-center gap-3">
-                    {/* If MCQ or Drag & Drop Slot Mode, show radio button to select correct answer */}
+                    {/* Radio Button for Selecting the Correct Answer in MCQ or Slot Mode */}
                     {(type === "multiple_choice" || (type === "drag_drop" && dragDropMode === "slot")) && (
                       <input
                         type="radio"
-                        name="correct_choice"
+                        name="correct-answer-selector"
                         checked={
                           type === "multiple_choice"
-                            ? correctAnswerMcq === option && option.trim() !== ""
-                            : correctAnswerSlot === option && option.trim() !== ""
+                            ? correctAnswerMcq === opt && opt.trim() !== ""
+                            : correctAnswerSlot === opt && opt.trim() !== ""
                         }
-                        disabled={option.trim() === ""}
                         onChange={() => {
                           if (type === "multiple_choice") {
-                            setCorrectAnswerMcq(option);
+                            setCorrectAnswerMcq(opt);
                           } else {
-                            setCorrectAnswerSlot(option);
+                            setCorrectAnswerSlot(opt);
                           }
                         }}
-                        className="w-4 h-4 text-indigo-500 bg-slate-900 border-slate-700 focus:ring-indigo-500 cursor-pointer"
-                        title="ทำเครื่องหมายว่าเป็นข้อเฉลยที่ถูกต้อง"
+                        title="คลิกเพื่อกำหนดให้ตัวเลือกนี้เป็นเฉลยที่ถูกต้อง"
+                        className="w-4 h-4 text-emerald-500 focus:ring-emerald-500 border-slate-700 bg-slate-900 cursor-pointer flex-shrink-0"
                       />
                     )}
 
-                    {type === "drag_drop" && dragDropMode === "lines" && (
-                      <span className="font-mono text-xs font-bold text-indigo-400 w-6 text-center">
-                        #{idx + 1}
-                      </span>
-                    )}
+                    <span className="text-xs font-mono font-bold text-slate-400 w-6 text-center">
+                      {idx + 1}.
+                    </span>
 
                     <input
                       type="text"
-                      value={option}
-                      onChange={(e) => handleOptionChange(idx, e.target.value)}
-                      placeholder={
-                        type === "multiple_choice"
-                          ? `ตัวเลือกที่ ${idx + 1}`
-                          : dragDropMode === "slot"
-                          ? `ตัวเลือกที่ ${idx + 1} (เช่น println)`
-                          : `คำสั่งบรรทัดที่ ${idx + 1}`
-                      }
-                      className="flex-1 px-4 py-2 rounded-xl border border-slate-300 dark:border-slate-700/60 bg-white dark:bg-[#0F172A] text-slate-900 dark:text-white text-xs focus:outline-none"
+                      value={opt}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        if (type === "multiple_choice" && correctAnswerMcq === opt) {
+                          setCorrectAnswerMcq(val);
+                        } else if (type === "drag_drop" && dragDropMode === "slot" && correctAnswerSlot === opt) {
+                          setCorrectAnswerSlot(val);
+                        }
+                        handleOptionChange(idx, val);
+                      }}
+                      placeholder={`ตัวเลือกที่ ${idx + 1}`}
+                      className="flex-1 px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700/60 bg-white dark:bg-[#0F172A] text-slate-900 dark:text-white text-xs font-mono focus:outline-none focus:border-indigo-500"
                       required
                     />
 
+                    {/* Move Controls for Multi-line code order */}
                     <div className="flex items-center gap-1">
                       <button
                         type="button"
                         onClick={() => handleMoveOption(idx, "up")}
                         disabled={idx === 0}
-                        className={`p-1.5 rounded-lg border transition-all ${
-                          idx === 0
-                            ? "opacity-20 cursor-not-allowed border-transparent text-slate-400 dark:text-slate-600"
-                            : "border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-700 cursor-pointer"
-                        }`}
+                        className="p-1.5 text-slate-400 hover:text-indigo-400 disabled:opacity-20 cursor-pointer"
                         title="เลื่อนขึ้น"
                       >
                         <ChevronUp size={13} />
@@ -490,11 +543,7 @@ export default function AdminQuizzes({ lesson, onBack, token, showToast }: Admin
                         type="button"
                         onClick={() => handleMoveOption(idx, "down")}
                         disabled={idx === options.length - 1}
-                        className={`p-1.5 rounded-lg border transition-all ${
-                          idx === options.length - 1
-                            ? "opacity-20 cursor-not-allowed border-transparent text-slate-400 dark:text-slate-600"
-                            : "border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-700 cursor-pointer"
-                        }`}
+                        className="p-1.5 text-slate-400 hover:text-indigo-400 disabled:opacity-20 cursor-pointer"
                         title="เลื่อนลง"
                       >
                         <ChevronDown size={13} />
@@ -591,9 +640,16 @@ export default function AdminQuizzes({ lesson, onBack, token, showToast }: Admin
                       </span>
                     </div>
 
-                    <h5 className="font-bold text-slate-900 dark:text-white text-xs">
-                      {q.question}
-                    </h5>
+                    <div className="font-bold text-slate-900 dark:text-white text-xs">
+                      {renderQuizQuestionContent(q.question)}
+                    </div>
+
+                    {q.template_code && (
+                      <div className="p-2.5 rounded-xl bg-slate-100 dark:bg-[#0F172A] border border-slate-200 dark:border-slate-700/60 font-mono text-[11px] text-indigo-600 dark:text-indigo-400 whitespace-pre overflow-x-auto">
+                        <span className="text-[10px] text-slate-500 dark:text-slate-400 block mb-1 font-sans font-bold uppercase tracking-wider">โค้ดต้นแบบ (Slot template):</span>
+                        {q.template_code}
+                      </div>
+                    )}
 
                     {/* Show Options Overview */}
                     <div className="space-y-2 pl-3 border-l-2 border-slate-200 dark:border-slate-700">
@@ -620,11 +676,11 @@ export default function AdminQuizzes({ lesson, onBack, token, showToast }: Admin
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-2 self-end md:self-start flex-shrink-0">
+                  <div className="flex items-center gap-2 flex-shrink-0">
                     <button
                       id={`edit-question-${q.id}`}
                       onClick={() => handleOpenEdit(q)}
-                      className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-500 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400 hover:bg-slate-100 dark:hover:bg-[#0F172A] transition-all cursor-pointer"
+                      className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-100 dark:hover:bg-[#0F172A] transition-all cursor-pointer inline-flex items-center justify-center"
                       title="แก้ไขข้อสอบ"
                     >
                       <Edit2 size={13} />
@@ -632,7 +688,7 @@ export default function AdminQuizzes({ lesson, onBack, token, showToast }: Admin
                     <button
                       id={`delete-question-${q.id}`}
                       onClick={() => handleDelete(q.id)}
-                      className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-500 hover:text-rose-600 dark:text-slate-400 dark:hover:text-rose-400 hover:bg-slate-100 dark:hover:bg-[#0F172A] transition-all cursor-pointer"
+                      className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-slate-100 dark:hover:bg-[#0F172A] transition-all cursor-pointer inline-flex items-center justify-center"
                       title="ลบข้อสอบ"
                     >
                       <Trash2 size={13} />

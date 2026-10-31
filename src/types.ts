@@ -32,9 +32,10 @@ export interface QuizQuestion {
   lesson_id: string;
   type: "multiple_choice" | "drag_drop";
   question: string;
-  template_code?: string; // Optional code template with slot placeholder e.g. "System.out.___(\"Hello World\");"
-  options: string[]; // For MCQ, list of choices. For Drag & Drop, list of draggable blocks
-  correct_answer?: string | string[]; // For MCQ: string index/text. For Drag & Drop: array of correct sequence
+  template_code?: string;
+  options: string[];
+  correct_answer?: string | string[];
+  is_reorder?: boolean; // 👈 เพิ่มบรรทัดนี้ครับ
   order_index: number;
 }
 
