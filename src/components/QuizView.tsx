@@ -190,30 +190,38 @@ export default function QuizView({
   const currentQuestion = activeQuestions[currentIdx];
   if (!currentQuestion) return null;
 
-// ดักจับว่ามีช่องว่าง ___ หรือไม่ (เช็คทั้ง template_code และ question)
+const isSingleAnswer = Array.isArray(currentQuestion.correct_answer) && currentQuestion.correct_answer.length === 1;
   const hasTemplateWithBlank = Boolean(
     (currentQuestion.template_code && currentQuestion.template_code.includes("___")) ||
     (currentQuestion.question && currentQuestion.question.includes("___"))
   );
-
-  const isExplicitReorder = Boolean(
-    (currentQuestion as any).is_reorder === true ||
-    (Array.isArray(currentQuestion.correct_answer) && currentQuestion.correct_answer.length > 1)
-  );
-
+  const isExplicitReorder = (currentQuestion as any).is_reorder === true && !hasTemplateWithBlank && !isSingleAnswer;
   const isSlotDragDrop =
     currentQuestion.type === "drag_drop" &&
     !isExplicitReorder &&
-    (hasTemplateWithBlank || (!currentQuestion.template_code && currentQuestion.options && currentQuestion.options.length <= 1));
+    (hasTemplateWithBlank || isSingleAnswer || (!currentQuestion.template_code && currentQuestion.options && currentQuestion.options.length <= 1));
 
   // ดึงโค้ดต้นแบบมาใช้งาน รองรับทั้งกรณีที่เคยพิมพ์ไว้ใน question หรือ template_code
-  const effectiveTemplateCode = (
+  // Fallback template_code: ดึงจาก template_code หรือ question ที่มี ___ พร้อมระบบ Smart recovery
+  let effectiveTemplateCode = (
     (currentQuestion.template_code && currentQuestion.template_code.includes("___") ? currentQuestion.template_code : "") ||
-    (currentQuestion.question && currentQuestion.question.includes("___") ? currentQuestion.question : "") ||
-    (isSlotDragDrop && currentQuestion.options?.some((o: string) => ["print", "println", "Print"].includes(o))
-      ? 'System.out.___("Hello World");'
-      : "")
+    (currentQuestion.question && currentQuestion.question.includes("___") ? currentQuestion.question : "")
   );
+
+  // สำรองความถูกต้องของข้อสอบเติมคำในบทเรียนพื้นฐาน กรณีไม่มี template_code
+  if (isSlotDragDrop && !effectiveTemplateCode) {
+    const opts = currentQuestion.options || [];
+    const ans = Array.isArray(currentQuestion.correct_answer) ? String(currentQuestion.correct_answer[0] || "") : String(currentQuestion.correct_answer || "");
+    if (ans === "void" || opts.includes("void")) {
+      effectiveTemplateCode = "public static ___ main(String[] args) {\n    System.out.println(\"Hello\");\n}";
+    } else if (ans === "*/" || opts.includes("*/")) {
+      effectiveTemplateCode = "/* ความคิดเห็นหลายบรรทัด ___";
+    } else if (ans === '"Java"' || opts.includes('"Java"')) {
+      effectiveTemplateCode = 'System.out.println(___);';
+    } else if (opts.some((o: string) => ["print", "println", "Print"].includes(o))) {
+      effectiveTemplateCode = 'System.out.___("Hello World");';
+    }
+  }
 
   // ตรวจจับโค้ดหลายบรรทัด
   const hasTemplate = Boolean(effectiveTemplateCode && effectiveTemplateCode.includes("___"));

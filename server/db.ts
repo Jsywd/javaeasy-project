@@ -487,6 +487,36 @@ export function loadLocalDB() {
   }
 }
 
+export function parseQuestionRecord(q: any, localQuestions: QuizQuestion[] = []): QuizQuestion {
+  const matchedLocal = localQuestions.find((l: any) => l.id === q.id);
+  let template_code = q.template_code || matchedLocal?.template_code;
+  let cleanQuestion = q.question || "";
+
+  // ตรวจจับ template_code ที่ฝังไว้
+  if (cleanQuestion.includes("<!--template:")) {
+    const match = cleanQuestion.match(/<!--template:([\s\S]*?)-->/);
+    if (match) {
+      try {
+        template_code = decodeURIComponent(match[1]);
+      } catch {
+        template_code = match[1];
+      }
+      cleanQuestion = cleanQuestion.replace(/<!--template:[\s\S]*?-->/, "").trim();
+    }
+  }
+
+  // หากในโจทย์มี ___ ให้ใช้เป็น template_code
+  if (!template_code && cleanQuestion.includes("___")) {
+    template_code = cleanQuestion;
+  }
+
+  return {
+    ...(matchedLocal || {}),
+    ...q,
+    question: cleanQuestion,
+    template_code: template_code || undefined,
+  };
+}
 // ==========================================
 // UNIFIED DATABASE OPERATIONS ENGINE
 // ==========================================
@@ -792,6 +822,7 @@ export const db = {
   },
 
   // Questions CRUD
+  // Questions CRUD
   async getQuestionsByLesson(lessonId: string): Promise<QuizQuestion[]> {
     const local = loadLocalDB();
     const localQuestions = local.questions.filter((q: QuizQuestion) => q.lesson_id === lessonId);
@@ -807,36 +838,14 @@ export const db = {
         if (error) throw error;
         markSupabaseSuccess();
         if (data && data.length > 0) {
-          // Merge with local questions to restore template_code that may not exist as a column in Supabase
-          return data.map((q: any) => {
-            const matchedLocal = localQuestions.find((l: any) => l.id === q.id) ||
-              local.questions.find((l: any) => l.id === q.id);
-            let template_code = q.template_code || matchedLocal?.template_code;
-
-            // Smart fallback if template_code is missing for printing slot questions
-            if (!template_code && q.type === "drag_drop") {
-              const opts = Array.isArray(q.options) ? q.options : [];
-              const correct = Array.isArray(q.correct_answer) ? q.correct_answer : [q.correct_answer];
-              if (
-                opts.some((o: string) => ["print", "println", "Print"].includes(o)) ||
-                correct.some((c: string) => ["print", "println"].includes(c))
-              ) {
-                template_code = 'System.out.___("Hello World");';
-              }
-            }
-
-            return {
-              ...(matchedLocal || {}),
-              ...q,
-              template_code: template_code || undefined,
-            };
-          });
+          // ✅ เรียกใช้ parseQuestionRecord เพื่อถอดรหัส <!--template:...--> และลบ tag ออกจาก question
+          return data.map((q: any) => parseQuestionRecord(q, local.questions));
         }
       } catch (err) {
         handleSupabaseError(err, "getQuestionsByLesson");
       }
     }
-    return localQuestions;
+    return localQuestions.map((q: any) => parseQuestionRecord(q, local.questions));
   },
 
   async saveQuestion(question: QuizQuestion): Promise<QuizQuestion> {
@@ -853,17 +862,23 @@ export const db = {
     // 2. Sync to Supabase if available
     if (isSupabaseAvailable()) {
       try {
-        // Strip template_code before upserting if it might not exist in Supabase schema
         const { template_code, ...supabasePayload } = question;
+        const encodedQuestion = template_code
+          ? `<!--template:${encodeURIComponent(template_code)}-->${question.question}`
+          : question.question;
+
         const upsertPromise = supabase
           .from("quiz_questions")
-          .upsert(supabasePayload)
+          .upsert({
+            ...supabasePayload,
+            question: encodedQuestion,
+          })
           .select()
           .single();
         const { data, error } = await withTimeout(upsertPromise, 3500);
         if (!error && data) {
           markSupabaseSuccess();
-          return { ...data, template_code: question.template_code };
+          return { ...question };
         }
       } catch (err) {
         handleSupabaseError(err, "saveQuestion");

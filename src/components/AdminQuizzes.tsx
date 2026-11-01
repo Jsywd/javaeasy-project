@@ -654,9 +654,9 @@ export default function AdminQuizzes({ lesson, onBack, token, showToast }: Admin
                       ) : (
                         <div className="space-y-1">
                           <span className="text-[10px] text-slate-500 dark:text-slate-400 block mb-1">ลำดับโค้ดที่เฉลยถูกต้อง:</span>
-                          {(q.correct_answer as string[]).map((val, cIdx) => (
+                          {(Array.isArray(q.correct_answer) ? q.correct_answer : [q.correct_answer]).map((val, cIdx) => (
                             <code key={cIdx} className="block text-[11px] text-indigo-700 dark:text-indigo-400 font-mono bg-slate-100 dark:bg-[#0F172A] px-2 py-1 rounded border border-slate-200 dark:border-slate-700/60 w-fit">
-                              {cIdx + 1}. {val}
+                            {cIdx + 1}. {val}
                             </code>
                           ))}
                         </div>
