@@ -490,3 +490,75 @@ h1, h2, h3, h4, h5, h6 {
   border: 1px solid rgba(51, 65, 85, 0.5) !important;
   box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.3) !important;
 }
+
+/* ========================================================
+   PRISM SYNTAX HIGHLIGHTING (Dark Mode / Default Base)
+   ชุดสีสำหรับ Dark Mode (สไตล์ VS Code Dark+)
+   ======================================================== */
+.token.comment,
+.token.prolog,
+.token.doctype,
+.token.cdata {
+  color: #94A3B8;
+  font-style: italic;
+}
+
+.token.punctuation {
+  color: #94A3B8;
+}
+
+.token.property,
+.token.tag,
+.token.symbol,
+.token.deleted {
+  color: #FBBF24;
+}
+
+.token.boolean,
+.token.number,
+.token.constant {
+  color: #FBBF24;
+}
+
+.token.selector,
+.token.attr-name,
+.token.string,
+.token.char,
+.token.builtin,
+.token.inserted {
+  color: #34D399;
+}
+
+.token.operator,
+.token.entity,
+.token.url {
+  color: #CBD5E1;
+}
+
+.token.atrule,
+.token.attr-value,
+.token.keyword {
+  color: #FB7185;
+  font-weight: 600;
+}
+
+.token.function {
+  color: #60A5FA;
+  font-weight: 600;
+}
+
+.token.class-name,
+.token.class {
+  color: #38BDF8;
+  font-weight: 600;
+}
+
+.token.regex,
+.token.important,
+.token.variable {
+  color: #A78BFA;
+}
+
+.token.annotation {
+  color: #C084FC;
+}

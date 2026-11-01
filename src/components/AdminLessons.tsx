@@ -3,6 +3,7 @@ import { Lesson, CodeExample } from "../types";
 import { safeFetchJson } from "../lib/api";
 import { renderFormattedContent } from "../lib/formatContent";
 import { Plus, Edit2, Trash2, Eye, FileText, Check, AlertCircle, Layers } from "lucide-react";
+import SyntaxHighlighter from "./SyntaxHighlighter";
 
 interface AdminLessonsProps {
   lessons: Lesson[];
@@ -218,7 +219,7 @@ export default function AdminLessons({ lessons, onRefresh, token, onSelectLesson
           )}
 
           {previewMode ? (
-            /* MARKDOWN & INLINE CODE PREVIEW MODE */
+            /* MARKDOWN PREVIEW MODE */
             <div id="lesson-preview" className="prose prose-invert max-w-none border border-slate-700/50 p-6 rounded-xl bg-[#0F172A] min-h-[300px]">
               <h2 className="text-xl font-bold mb-3 text-white">{title || "ไม่ได้ระบุหัวข้อบทเรียน"}</h2>
               <div className="text-xs text-slate-400 mb-6">
@@ -240,53 +241,44 @@ export default function AdminLessons({ lessons, onRefresh, token, onSelectLesson
                           if (ce && ce.code) {
                             used.add(exIdx);
                             return (
-                              <div key={pIdx} className="my-4 rounded-xl overflow-hidden border border-slate-700/60 bg-[#1E293B]">
-                                <div className="px-4 py-2 bg-[#0F172A] border-b border-slate-700/50 text-xs font-mono font-bold text-indigo-400">
+                              <div key={pIdx} className="my-4 not-prose">
+                                <h4 className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
                                   ตัวอย่างที่ {exNum}: {ce.title}
-                                </div>
-                                <pre className="p-4 bg-[#0F172A]/50 text-slate-200 font-mono text-xs overflow-x-auto m-0">
-                                  {ce.code}
-                                </pre>
-                                {ce.output && (
-                                  <div className="border-t border-slate-700/60 bg-[#0B1120]">
-                                    <div className="px-4 py-1.5 bg-[#0F172A]/80 border-b border-slate-800 text-[10px] font-mono font-bold text-slate-400 flex items-center gap-1.5">
-                                      <span className="text-indigo-400">&gt;_</span>
-                                      <span>ผลลัพธ์การรัน (OUTPUT)</span>
-                                    </div>
-                                    <div className="p-4 font-mono text-xs text-slate-200 whitespace-pre-wrap">
-                                      {ce.output}
-                                    </div>
-                                  </div>
-                                )}
+                                </h4>
+                                <SyntaxHighlighter
+                                  code={ce.code}
+                                  language={ce.language || "java"}
+                                  title={ce.title}
+                                  output={ce.output}
+                                />
                               </div>
                             );
                           }
+                          return null;
                         }
-                        return <div key={pIdx}>{renderFormattedContent(part)}</div>;
+
+                        if (!part.trim()) return null;
+                        return (
+                          <div key={pIdx}>
+                            {renderFormattedContent(part)}
+                          </div>
+                        );
                       })}
 
-                      {/* Display any code examples that were not placed inline */}
+                      {/* แสดงโค้ดตัวอย่างที่ไม่ได้แทรก inline ไว้ด้านล่าง */}
                       {codeExamples.map((ce, i) => {
-                        if (used.has(i) || !ce.code.trim()) return null;
+                        if (used.has(i) || !ce.code) return null;
                         return (
-                          <div key={i} className="my-4 rounded-xl overflow-hidden border border-slate-700/60 bg-[#1E293B]">
-                            <div className="px-4 py-2 bg-[#0F172A] border-b border-slate-700/50 text-xs font-mono font-bold text-indigo-400">
-                              โค้ดตัวอย่างที่ {i + 1}: {ce.title}
-                            </div>
-                            <pre className="p-4 bg-[#0F172A]/50 text-slate-200 font-mono text-xs overflow-x-auto m-0">
-                              {ce.code}
-                            </pre>
-                            {ce.output && (
-                              <div className="border-t border-slate-700/60 bg-[#0B1120]">
-                                <div className="px-4 py-1.5 bg-[#0F172A]/80 border-b border-slate-800 text-[10px] font-mono font-bold text-slate-400 flex items-center gap-1.5">
-                                  <span className="text-indigo-400">&gt;_</span>
-                                  <span>ผลลัพธ์การรัน (OUTPUT)</span>
-                                </div>
-                                <div className="p-4 font-mono text-xs text-slate-200 whitespace-pre-wrap">
-                                  {ce.output}
-                                </div>
-                              </div>
-                            )}
+                          <div key={i} className="mt-4 not-prose">
+                            <h4 className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
+                              ตัวอย่างที่ {i + 1}: {ce.title}
+                            </h4>
+                            <SyntaxHighlighter
+                              code={ce.code}
+                              language={ce.language || "java"}
+                              title={ce.title}
+                              output={ce.output}
+                            />
                           </div>
                         );
                       })}
